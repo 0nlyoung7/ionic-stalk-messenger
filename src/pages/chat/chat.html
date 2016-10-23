@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Chat
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ol class="messages">
+    <li *ngFor="let message of messages;" [ngClass]="message.type">
+      <span>{{message.content}}</span>
+	</li>
+  </ol>
+</ion-content>
