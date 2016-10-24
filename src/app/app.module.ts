@@ -7,6 +7,9 @@ import { HomePage } from '../pages/home/home';
 import { ChatPage } from '../pages/chat/chat';
 import { TabsPage } from '../pages/tabs/tabs';
 
+//GlobalVariable
+import {SharedService} from './sharedService';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -28,6 +31,6 @@ import { TabsPage } from '../pages/tabs/tabs';
     TabsPage,
     ChatPage
   ],
-  providers: []
+  providers: [SharedService]
 })
 export class AppModule {}
