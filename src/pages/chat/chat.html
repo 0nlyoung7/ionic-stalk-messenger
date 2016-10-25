@@ -16,7 +16,10 @@
 
 <ion-footer class="bar-frosted" >
   <ion-item>
-    <input type="file" id="file" style="display:none"/>
+    <input type="file" #fileInput id="file" style="display:none"/>
+    <button ion-button icon-only item-left clear (click)="selectFile()">
+      <ion-icon name="md-add-circle" ></ion-icon>
+    </button>
     <ion-input [(ngModel)]="inputMessage" placeholder="Start typing..."></ion-input>
     <button ion-button item-right color="primary" style="min-width:50px;" (click)="send()" >Send</button>
   </ion-item>

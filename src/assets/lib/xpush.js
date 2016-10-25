@@ -677,6 +677,54 @@
       });
     };
 
+    XPush.prototype.uploadFileInBrowser = function(fileInput, fnPrg, fnCallback){
+      var formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      var hostname = self.hostname;
+
+      if(typeof(fnPrg) == 'function' && !fnCallback ){
+        fnCallback = fnPrg;
+        fnPrg = undefined;
+      }
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", hostname+ "/upload", true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          fileInput.value = "";
+          var resData = JSON.parse(xhr.responseText);
+          if (resData.status == 'ok') {
+
+            var imageUploaded = encodeURIComponent(resData.result.url);
+            if( typeof(fnCallback) == 'function' ){
+              fnCallback( imageUploaded );
+            }
+          }
+        } else if (xhr.readyState == 4 && xhr.status != 200) {
+          fileInput.value = "";
+        }
+      }
+
+      xhr.upload.onprogress = function(e) {
+        var done = e.position || e.loaded,
+          total = e.totalSize || e.total
+        var present = Math.floor(done / total * 100);
+        if( typeof(fnPrg) == 'function' ){
+          fnPrg( present );
+        }
+      }
+
+      xhr.setRequestHeader("XP-A", _CONFIG.app);
+      xhr.setRequestHeader("XP-C", _CONFIG.channel);
+      xhr.setRequestHeader("XP-U", _CONFIG.user);
+      xhr.setRequestHeader("XP-FU-org", file.name);
+      xhr.setRequestHeader("XP-FU-nm", file.name.substring(0, file.name.lastIndexOf(".")));
+      xhr.setRequestHeader("XP-FU-tp", "image");
+
+      xhr.send(formData);
+      return false;
+    };
+
     /**
      * file dom 객체가 지원되지 않는 mobile에서는 REST API를 이용하여 파일을 업로드한다.
      * @name uploadFile
@@ -700,52 +748,47 @@
     XPush.prototype.uploadFile = function(channel, fileUri, inputObj, fnPrg, fnCallback){
       var self = this;
 
-      self.getChannelAsync(channel, function(err, ch){
+      if(window.FileTransfer && window.FileUploadOptions){
 
-        if(window.FileTransfer && window.FileUploadOptions){
+        var url = ch._server.serverUrl+'/upload';
 
-          var url = ch._server.serverUrl+'/upload';
+        var options = new FileUploadOptions();
+        options.fileKey="post";
+        options.chunkedMode = false;
+        options.params = {
+          'key1': 'VAL1',
+          'key2': 'VAL2'
+        };
+        options.headers = {
+          'XP-A': self.appId,
+          'XP-C': channel,
+          'XP-U': JSON.stringify({
+            U: self.userId,
+            D: self.deviceId
+          }) //[U]^[D]^[TK] @ TODO add user token
+        };
+        options.headers['XP-FU-org'] = inputObj.name;
+        if(inputObj.overwrite) options.headers['XP-FU-nm'] = inputObj.name;
+        if(inputObj.type)      options.headers['XP-FU-tp'] = inputObj.type;
 
-          var options = new FileUploadOptions();
-          options.fileKey="post";
-          options.chunkedMode = false;
-          options.params = {
-            'key1': 'VAL1',
-            'key2': 'VAL2'
+        var ft = new FileTransfer();
+        if( fnPrg != undefined ){
+          ft.onprogress = function(progressEvent) {
+            if (progressEvent.lengthComputable) {
+              var perc = Math.floor(progressEvent.loaded / progressEvent.total * 100);
+              fnPrg( perc);
+            }
           };
-          options.headers = {
-            'XP-A': self.appId,
-            'XP-C': channel,
-            'XP-U': JSON.stringify({
-              U: self.userId,
-              D: self.deviceId
-            }) //[U]^[D]^[TK] @ TODO add user token
-          };
-          options.headers['XP-FU-org'] = inputObj.name;
-          if(inputObj.overwrite) options.headers['XP-FU-nm'] = inputObj.name;
-          if(inputObj.type)      options.headers['XP-FU-tp'] = inputObj.type;
-
-          var ft = new FileTransfer();
-          if( fnPrg != undefined ){
-            ft.onprogress = function(progressEvent) {
-              if (progressEvent.lengthComputable) {
-                var perc = Math.floor(progressEvent.loaded / progressEvent.total * 100);
-                fnPrg( perc);
-              }
-            };
-          }
-
-          ft.upload(fileUri, encodeURI(url), function(data){
-            fnCallback(data);
-            //$scope.picData = FILE_URI;
-            //$scope.$apply();
-          }, function(e) {
-              debug("On fail " + e);
-          }, options);
-
         }
 
-      });
+        ft.upload(fileUri, encodeURI(url), function(data){
+          fnCallback(data);
+          //$scope.picData = FILE_URI;
+          //$scope.$apply();
+        }, function(e) {
+            debug("On fail " + e);
+        }, options);
+      }
     };
 
     /**
@@ -1147,11 +1190,15 @@
       }
 
       var hostname = self.hostname.replace( "http://", "" );
-      if( hostname.indexOf( ":" ) > 0 ) hostname = hostname.split(":")[0];
+      var port = 8000;
+      if( hostname.indexOf( ":" ) > 0 ) {
+        hostname = hostname.split(":")[0];
+        port = hostname.split(":")[1]
+      }
 
       var options = {
         host: hostname,
-        port:8000,
+        port:port,
         path: context,
         method: method
       };
@@ -1338,6 +1385,10 @@
 
       if( self._globalConnection ){
         self._globalConnection.attchOnEvent( event );
+      }
+
+      for ( var key in self._channels ){
+        self._channels[key].attchOnEvent( event );
       }
     };
 
@@ -1658,7 +1709,8 @@
      */
     Connection.prototype.attchOnEvent = function(eventNm){
       var self = this;
-      if(self._socket){
+      self._events = self._events || {};
+      if(self._socket && !self._events[eventNm] ){
         self._socket.on( eventNm ,function(data){
           debug("xpush : channel receive, " +eventNm, self.chNm, data, self._xpush.userId);
           self._xpush.emit(eventNm, self.chNm, eventNm , data);
