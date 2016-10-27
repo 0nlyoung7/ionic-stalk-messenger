@@ -8,15 +8,22 @@
 
 <ion-content padding>
   <ol class="messages">
-    <li *ngFor="let message of messages;" [ngClass]="message.type">
-      <span>{{message.content}}</span>
-	</li>
+    <li *ngFor="let message of messages;" [ngClass]="message.sr">
+      <div *ngIf=" message.type =='I' ">
+        <span>
+          <img [src]="message.content"/>
+        </span>
+      </div>
+      <div *ngIf=" message.type =='' ">
+        <span>{{message.content}}</span>
+      </div>
+	  </li>
   </ol>
 </ion-content>
 
 <ion-footer class="bar-frosted" >
   <ion-item>
-    <input type="file" #fileInput id="file" style="display:none"/>
+    <input type="file" #fileInput id="file" style="display:none" (change)="onFileChange($event, fileInput.value)" />
     <button ion-button icon-only item-left clear (click)="selectFile()">
       <ion-icon name="md-add-circle" ></ion-icon>
     </button>
