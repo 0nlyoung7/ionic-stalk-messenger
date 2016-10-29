@@ -3,12 +3,13 @@ import { Platform } from 'ionic-angular';
 import { StatusBar, Splashscreen } from 'ionic-native';
 
 import { TabsPage } from '../pages/tabs/tabs';
+import { SignInPage } from '../pages/account/signin';
 
 @Component({
   template: `<ion-nav [root]="rootPage"></ion-nav>`
 })
 export class MyApp {
-  rootPage = TabsPage;
+  rootPage = SignInPage;
 
   constructor(platform: Platform) {
     platform.ready().then(() => {
