@@ -4,6 +4,8 @@ import { NavController } from 'ionic-angular';
 
 import {SharedService} from '../../app/sharedService';
 
+import { ChatPage } from '../chat/chat';
+
 @Component({
   selector: 'page-contact',
   templateUrl: 'contact.html'
@@ -23,5 +25,9 @@ export class ContactPage {
         //callback( [] );
       }
     });
+  }
+
+  public gotoChat = (user) => {
+    this.navCtrl.push(ChatPage, {users:[user.U]});
   }
 }

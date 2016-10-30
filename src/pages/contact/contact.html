@@ -8,10 +8,11 @@
 
 <ion-content>
   <ion-list >
-    <ion-item-sliding *ngFor="let user of users;" >
+    <ion-item-sliding *ngFor="let user of users;" (click)="gotoChat(user);">
       <ion-item>
         <ion-avatar item-left>
-          <img src="{{user.image}}">
+          <img src="{{user.image}}" *ngIf=" !!user.image ">
+          <img src="http://messengerx.github.io/app/www/img/default_image.jpg" *ngIf=" !user.image ">
         </ion-avatar>
         <h2>{{user.U}}</h2>
       </ion-item>

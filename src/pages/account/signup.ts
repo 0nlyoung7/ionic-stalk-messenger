@@ -14,7 +14,7 @@ export class SignUpPage {
   password: any;
 
   // Alert 을 위한 alertCtrl 을 추가함
-  constructor(public navCtrl: NavController, public ss: SharedService, public alertCtrl: AlertController) {
+  constructor(public ss: SharedService, public alertCtrl: AlertController) {
   }
 
   public signUp(){

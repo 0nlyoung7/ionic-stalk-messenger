@@ -56,8 +56,8 @@
       self.channelNameList = [];
       self.hostname = host;
       self.receiveMessageStack = [];
-      self.isExistUnread = true;
-      self.autoInitFlag = true;
+      self.isExistUnread = false;
+      self.autoInitFlag = false;
       self._userEventNames = [];
 
       if( autoInitFlag !=undefined ){
@@ -219,6 +219,7 @@
               if(cb) cb(result.message, result.result); // @ TODO from yohan.
             });
           });
+
         }else{
           if(cb) cb(result.message);
           alert('xpush : login error'+ result.message);
@@ -335,13 +336,17 @@
         cb = channel; channel = undefined; datas = {};
       }
 
-      var newChannel;
-      var channelNm = channel;
-
       //Add logined user if not in users
       if( users.indexOf(self.userId) < 0 ){
         users.push(self.userId);
       }
+
+      if( channel == undefined && users ){
+        channel = self.generateChannelId(users);        
+      }
+
+      var newChannel;
+      var channelNm = channel;
 
       self.sEmit('channel.create',{C: channel, U: users, DT:datas},function(err, result){
         //_id: "53b039e6a2f41316d7046732"
@@ -396,6 +401,12 @@
     XPush.prototype.createSimpleChannel = function(channel, userObj, cb){
       var self = this;
 
+      if(typeof(channel) == 'object' && typeof(userObj) == 'function' && !cb){
+        cb = userObj;
+        userObj = channel;
+        channel = self.generateChannelId(userObj);
+      }
+
       var ch = self._makeChannel(channel);
       self._getChannelInfo(channel,function(err,data){
         if(err){
@@ -407,12 +418,14 @@
             cb = userObj; userObj = undefined;
           }
 
-          if(userObj){
-            self.userId = userObj.U || 'someone';
-            self.deviceId = userObj.D || 'WEB';
-          }else {
-            self.userId = 'someone';
-            self.deviceId = 'WEB';
+          if( !self.userId ){
+            if(userObj){
+              self.userId = userObj.U || UTILS.getTempUser();
+              self.deviceId = userObj.D || 'WEB';
+            }else {
+              self.userId = UTILS.getTempUser();;
+              self.deviceId = 'WEB';
+            }
           }
 
           ch.info = data.result;
@@ -677,8 +690,11 @@
       });
     };
 
-    XPush.prototype.uploadFileInBrowser = function(fileInput, fnPrg, fnCallback){
+    XPush.prototype.uploadFileInBrowser = function(channelId, fileInput, fnPrg, fnCallback){
+      var self = this;
+
       var formData = new FormData();
+      var file = fileInput.files[0];
       formData.append("file", fileInput.files[0]);
       var hostname = self.hostname;
 
@@ -695,7 +711,7 @@
           var resData = JSON.parse(xhr.responseText);
           if (resData.status == 'ok') {
 
-            var imageUploaded = encodeURIComponent(resData.result.url);
+            var imageUploaded = decodeURIComponent(resData.result.url);
             if( typeof(fnCallback) == 'function' ){
               fnCallback( imageUploaded );
             }
@@ -714,9 +730,9 @@
         }
       }
 
-      xhr.setRequestHeader("XP-A", _CONFIG.app);
-      xhr.setRequestHeader("XP-C", _CONFIG.channel);
-      xhr.setRequestHeader("XP-U", _CONFIG.user);
+      xhr.setRequestHeader("XP-A", self.appId);
+      xhr.setRequestHeader("XP-C", channelId);
+      xhr.setRequestHeader("XP-U", self.userId);
       xhr.setRequestHeader("XP-FU-org", file.name);
       xhr.setRequestHeader("XP-FU-nm", file.name.substring(0, file.name.lastIndexOf(".")));
       xhr.setRequestHeader("XP-FU-tp", "image");
@@ -930,6 +946,32 @@
       self.ajax( '/user/search' , 'POST', params, cb);
     };
 
+      /**
+     * server에서 사용자 list를 조회한다. pageing 처리가 가능하다.
+     * @name queryUser
+     * @memberof Xpush
+     * @function
+     * @param {Object} _params - ( query, column )
+     * @param {callback} cb - 조회 후 수행할 callback function
+     * @example
+     * var param = {query : {'DT.NM':'james'}, column: { U: 1, DT: 1, _id: 0 } };
+     * xpush.queryUser( param, function( err, userArray, count ){
+     *   console.log( userArray );
+     * });
+     */
+    XPush.prototype.listActiveUser = function(cb){
+
+      var self = this;
+
+      var params = {
+        'A' : self.appId
+      };
+
+      debug("xpush : listActiveUser ",params);
+
+      self.ajax( '/user/list/active' , 'POST', params, cb);
+    };
+
     /**
      * data를 전송한다.
      * @name send
@@ -1084,6 +1126,7 @@
      */
     XPush.prototype._initSessionSocket = function(socket,cb){
       var self = this;
+
 
       socket.on('_event',function(data){
         debug('xpush : global receive ', data.event, data.C,data.NM,data.DT, self.userId);
@@ -1331,6 +1374,7 @@
      */
     XPush.prototype.sEmit = function(key, params, cb){
       var self = this;
+
       var returnFunction = function(result){
 
         if(result.status == 'ok'){
@@ -1381,14 +1425,17 @@
 
       self._events = self._events || {};
       self._events[event] = self._events[event] || [];
-      self._events[event].push(fct);
 
-      if( self._globalConnection ){
-        self._globalConnection.attchOnEvent( event );
-      }
+      if( self._events[event].length < 1 ){
+        self._events[event].push(fct);
 
-      for ( var key in self._channels ){
-        self._channels[key].attchOnEvent( event );
+        if( self._globalConnection ){
+          self._globalConnection.attchOnEvent( event );
+        }
+
+        for ( var key in self._channels ){
+          self._channels[key].attchOnEvent( event );
+        }
       }
     };
 
@@ -1452,6 +1499,17 @@
         }
       }
     };
+
+    XPush.prototype.generateChannelId = function(jsonObj){
+
+      // multi user channel = generate uuid
+      if( jsonObj.length > 2 ){
+        return UTILS.getUniqueKey()+"_"+this.appId;
+      } else {
+        // 1:1 channel = userId concat friendId
+        return jsonObj.sort().join( "$" )+"_"+this.appId;
+      }
+    }
 
     /**
      * Represents a Connection
@@ -1634,6 +1692,10 @@
      */
     Connection.prototype.send = function(name, data, cb){
       var self = this;
+      if( typeof(data) == 'object' && !data.UO ){
+        data.UO = { 'U': self._xpush.userId };
+      }
+
       if(self._connected){
         self._socket.emit('send', {NM: name , DT: data});
       }else{
@@ -1713,6 +1775,15 @@
       if(self._socket && !self._events[eventNm] ){
         self._socket.on( eventNm ,function(data){
           debug("xpush : channel receive, " +eventNm, self.chNm, data, self._xpush.userId);
+
+          if( typeof(data) == 'object' && data.UO ) {
+            if( data.UO.U == self._xpush.userId ){
+              data.SR = "S";
+            } else {
+              data.SR = "R";
+            }
+          }
+
           self._xpush.emit(eventNm, self.chNm, eventNm , data);
         });    
       }
@@ -1788,6 +1859,29 @@
     UTILS.validateURL = function(textval) {
       var urlregex = /^(https?|ftp):\/\/([a-zA-Z0-9.-]+(:[a-zA-Z0-9.&%$-]+)*@)*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}|([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(:[0-9]+)*(\/($|[a-zA-Z0-9.,?'\\+&%$#=~_-]+))*$/;
       return urlregex.test(textval) || urlregex.test( decodeURIComponent(textval) );
+    }
+
+    UTILS.getTempUser = function() {
+      var rd = Math.floor((Math.random() * 1000) + 1);
+      return 'guest' + UTILS.lpad(new String(rd), 4, 0);
+    }
+
+    UTILS.lpad = function(s, padLength, padString) {
+      while (s.length < padLength)
+        s = padString + s;
+      return s;
+    }
+
+    UTILS.getUniqueKey = function () {
+      var s = [], itoh = '0123456789ABCDEF';
+      for (var i = 0; i < 36; i++) s[i] = Math.floor(Math.random()*0x10);
+      s[14] = 4;
+      s[19] = (s[19] & 0x3) | 0x8;
+
+      for (var x = 0; x < 36; x++) s[x] = itoh[s[x]];
+      s[8] = s[13] = s[18] = s[23] = '-';
+
+      return s.join('');
     }
 
     return XPush;
