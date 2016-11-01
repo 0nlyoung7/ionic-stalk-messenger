@@ -24,6 +24,7 @@ export class SignInPage {
   public signIn(){
     var self = this;
 
+    /**
     this.ss.xpush.login(this.userId, this.password, function(err, result){
       console.log( result );
 
@@ -40,6 +41,11 @@ export class SignInPage {
         alert.present();
       }
     });
-    
+    */
+    this.ss.s5.logIn(this.userId, this.password, function(err, user){
+      console.log( '--- 11111 ---')
+      console.log( err );
+      console.log( user );
+    });
   }
 }

@@ -19,6 +19,8 @@ export class SignUpPage {
 
   public signUp(){
     var self = this;
+
+    /**
     this.ss.xpush.signup(this.userId, this.password, function(err, result){
       console.log( result );
       var message = "";
@@ -35,6 +37,11 @@ export class SignUpPage {
         buttons: ['OK']
       });
       alert.present();
+    });
+    */
+
+    this.ss.s5.signUp(this.userId, this.password, function(err, result){
+
     });
   }
 }
