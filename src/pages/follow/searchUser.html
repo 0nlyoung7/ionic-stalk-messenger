@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Search User
+    </ion-title>
+    <ion-buttons end>
+      <button ion-button color="royal" (click)="addFollow();">Add</button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-searchbar (ionInput)="getItems($event)"></ion-searchbar>
+  <ion-list >
+    <ion-item *ngFor="let user of users;">
+      <ion-checkbox color="primary" checked="false" [(ngModel)]="checkedList[user.id]"></ion-checkbox>
+      <ion-avatar item-left>
+        <img src="{{user.image}}" *ngIf=" !!user.image ">
+        <img src="https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png" *ngIf=" !user.image ">
+      </ion-avatar>
+      <ion-label>{{user.nickName}}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

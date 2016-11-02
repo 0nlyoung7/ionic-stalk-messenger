@@ -20,28 +20,19 @@ export class SignUpPage {
   public signUp(){
     var self = this;
 
-    /**
-    this.ss.xpush.signup(this.userId, this.password, function(err, result){
-      console.log( result );
-      var message = "";
-      var status = result.status;
-      if( "ok" == result.status ){
-        message = "Success";
-      } else {
-        message = "User alreay exists.";
+    this.ss.stalk.signUp(this.userId, this.password, function(err, user){
+
+      if( err ){
+        var message = err.message;
+        let alert = self.alertCtrl.create({
+          title: 'SignUp Failed',
+          subTitle: message,
+          buttons: ['OK']
+        });
+        alert.present();
+        return;     
       }
-
-      let alert = self.alertCtrl.create({
-        title: status,
-        subTitle: message,
-        buttons: ['OK']
-      });
-      alert.present();
-    });
-    */
-
-    this.ss.s5.signUp(this.userId, this.password, function(err, result){
-
+      
     });
   }
 }

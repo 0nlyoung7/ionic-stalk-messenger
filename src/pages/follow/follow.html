@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Follow
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-list >
+    <ion-item-sliding *ngFor="let user of users; let inx = index">
+      <ion-item (click)="gotoChat(user);">
+        <ion-avatar item-left>
+          <img src="{{user.profileFileUrl}}">
+        </ion-avatar>
+        <h2>{{user.nickName}}</h2>
+        <p>{{user.statusMessage}}</p>
+      </ion-item>
+      <ion-item-options side="left">
+        <button ion-button color="primary">
+          <ion-icon name="text"></ion-icon>
+          Text
+        </button>
+        <button ion-button color="secondary">
+          <ion-icon name="call"></ion-icon>
+          Call
+        </button>
+      </ion-item-options>
+      <ion-item-options side="right">
+        <button ion-button color="danger" (click)="removeFollow(user, inx)">
+          <ion-icon name="remove-circle"></ion-icon>
+          Remove
+        </button>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <ion-fab bottom right>
+    <button ion-fab (click)="openSearchUser();"><ion-icon name="add"></ion-icon></button>
+  </ion-fab>
+</ion-content>

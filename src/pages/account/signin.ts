@@ -24,28 +24,18 @@ export class SignInPage {
   public signIn(){
     var self = this;
 
-    /**
-    this.ss.xpush.login(this.userId, this.password, function(err, result){
-      console.log( result );
-
-      if( !err ){
-        self.navCtrl.push(TabsPage, {});
-      } else {
-        var message = "The userId or password is incorrect.";
-        var status = result.status;
+    this.ss.stalk.logIn(this.userId, this.password, function(err, user){
+      if( err ){
+        var message = err.message;
         let alert = self.alertCtrl.create({
           title: 'SignIn Failed',
           subTitle: message,
           buttons: ['OK']
         });
         alert.present();
+        return;
       }
-    });
-    */
-    this.ss.s5.logIn(this.userId, this.password, function(err, user){
-      console.log( '--- 11111 ---')
-      console.log( err );
-      console.log( user );
+      self.navCtrl.push(TabsPage, {});
     });
   }
 }

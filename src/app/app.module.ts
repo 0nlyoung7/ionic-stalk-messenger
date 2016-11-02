@@ -6,6 +6,10 @@ import { ContactPage } from '../pages/contact/contact';
 import { HomePage } from '../pages/home/home';
 import { ChatPage } from '../pages/chat/chat';
 import { TabsPage } from '../pages/tabs/tabs';
+
+import { FollowPage } from '../pages/follow/follow';
+import { SearchUserPage } from '../pages/follow/searchUser';
+
 import { SignInPage } from '../pages/account/signin';
 import { SignUpPage } from '../pages/account/signup';
 
@@ -21,7 +25,9 @@ import {SharedService} from './sharedService';
     TabsPage,
     ChatPage,
     SignInPage,
-    SignUpPage
+    SignUpPage,
+    FollowPage,
+    SearchUserPage
   ],
   imports: [
     IonicModule.forRoot(MyApp)
@@ -35,7 +41,9 @@ import {SharedService} from './sharedService';
     TabsPage,
     ChatPage,
     SignInPage,
-    SignUpPage
+    SignUpPage,
+    FollowPage,
+    SearchUserPage
   ],
   providers: [SharedService]
 })
