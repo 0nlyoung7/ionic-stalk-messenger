@@ -37,8 +37,6 @@ export class SearchUserPage {
 
       self.ss.stalk.searchUsersByPage( data, function( err, users ){
         self.users = users;
-
-        console.log( users );
       });
 
     }, 200 );

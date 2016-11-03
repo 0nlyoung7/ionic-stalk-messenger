@@ -1,6 +1,7 @@
 (function(){
 
   var DEFAULT_PAGE_SIZE = 50;
+  var MESSAGE_SIZE = 30;
 
   var Stalk = (function() {
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
@@ -9,15 +10,73 @@
      Parse = require('parse');
     }
 
+    var socketOptions ={
+      transports: ['websocket']
+      ,'force new connection': true
+    };
+
+    var GLOBAL = 'global';
+    var CHANNEL = 'channel';
+
+    var debug = function() {
+    };
+
     var Stalk = function(host, appId){
       var self = this;
       self.appId = appId;
       self.hostname = host;
+      self.chats = {};
 
       Parse.initialize(appId);
       Parse.serverURL = self.hostname+'/parse';
 
       return self;
+    };
+
+    /**
+     * debug 기능을 켠다.
+     * @name enableDebug
+     * @memberof Xpush
+     * @function
+     * @example
+     * // enable debug
+     * xpush.enableDebug();
+     */
+    Stalk.prototype.enableDebug = function(){
+      if( oldDebug ){
+        return;
+      }
+
+      if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        debug = Function.prototype.bind.call(console.log, console);
+      } else {
+        if (window.console) {
+          if (Function.prototype.bind) {
+            debug = Function.prototype.bind.call(console.log, console);
+          } else {
+            debug = function() {
+              Function.prototype.apply.call(console.log, console, arguments);
+            };
+          }
+        }
+      }
+    };
+
+    /**
+     * debug 기능을 끈다.
+     * @name disableDebug
+     * @memberof Xpush
+     * @function
+     * @example
+     * // disable debug
+     * xpush.disableDebug();
+     */
+    Stalk.prototype.disableDebug = function(){
+      // Init debug funciton
+      debug = function(){
+      };
+
+      oldDebug = undefined;
     };
 
     Stalk.prototype.signUp = function(username, password, callback){
@@ -41,13 +100,17 @@
       Parse.User.logIn(username, password, {
         success: function(user) {
           // Do stuff after successful login.
-          callback( null, UTILS.fromUserToJSON(user) );
+          callback( null, ParseUtil.fromUserToJSON(user) );
         },
         error: function(user, error) {
           // The login failed. Check error to see why.
           callback( error, null );
         }
       });
+    };
+
+    Stalk.prototype.logOut = function(){
+      Parse.User.logOut();
     };
 
     Stalk.prototype.loadFollows = function(callback){
@@ -61,16 +124,12 @@
 
       query.find({
         success:function(results) {
-          callback( null, results.map(UTILS.fromFollowToJSON) )
+          callback( null, results.map(ParseUtil.fromFollowToJSON) )
         },
-        error: function(error) {
+        error: function(object, error) {
           callback( error, null );
         }
       });
-    };
-
-    Stalk.prototype.logOut = function(){
-      Parse.User.logOut();
     };
 
     Stalk.prototype.searchUsersByPage = function(data, callback){
@@ -91,9 +150,9 @@
 
         query.find({
           success:function(results) {
-            callback( null, results.map(UTILS.fromUserToJSON) )
+            callback( null, results.map(ParseUtil.fromUserToJSON) )
           },
-          error: function(error) {
+          error: function(object, error) {
             callback( error, null );
           }
         });
@@ -107,7 +166,7 @@
         success:function(result) {
           callback( null, result )
         },
-        error: function(error) {
+        error: function(object, error) {
           callback( error, null );
         }
       });
@@ -118,19 +177,221 @@
         success:function(result) {
           callback( null, result )
         },
-        error: function(error) {
+        error: function(object, error) {
           callback( error, null );
         }
       });      
     };
 
-    var UTILS = {};
+    Stalk.prototype.createChat = function(users, callback){
+      var self = this;
+      var ids = [];
+      users.forEach( function(user) {
+         ids.push(user.id);
+      });
 
-    UTILS.fromUserToJSON = function(user){
+      Parse.Cloud.run('chats-create', { ids: ids }, {
+        success:function(result) {
+          if( self.chats[result.id] ){
+            callback( null, self.chats[result.id] );
+            return;
+          }
+
+          self.getChatById( result.id, function( err, chat ){
+            callback( null, chat );
+          });
+        },
+        error: function(object, error) {
+          callback( error, null );
+        }
+      });
+    };
+
+    Stalk.prototype.getChatById = function(chatId, callback){
+      var self = this;
+      var Chats = Parse.Object.extend('Chats');
+
+      var query = new Parse.Query(Chats)
+      .include('channel.users')
+      .get(chatId, {
+        success:function(chat) {
+          var newChat = new Chat(self, ParseUtil.fromChatToJSON(chat) );
+          self.chats[newChat.id] = newChat;
+          callback( null, newChat  );
+        },
+        error: function(object, error) {
+          callback( error, null );
+        }
+      });
+    };
+
+    var Chat = function(stalk, data){
+      var self = this;
+      self._stalk = stalk;
+
+      self.id = data.id;
+      self.channelId = data.channelId;
+      self.createdAt = data.createdAt;
+      self.updatedAt = data.updatedAt;
+      self.name = data.name;
+      self.uid = data.uid;
+      self.users = data.users;
+
+      self.currentUser;
+
+      // channel connection;
+      self._socket;
+
+      self.onMessageCallback;
+
+      return self;
+    };
+
+    Chat.prototype._getSocket = function(callback){
+      var self = this;
+      self.currentUser = Parse.User.current();
+
+      if( self._socket && self._socket.connected ){
+        if( callback ) callback(self._socket);
+      } else {
+        self._getChannelNode( function(err, node){
+          if( !err ){
+            self.connectChannel(node, callback);
+          }
+        });
+      }
+    };
+
+    Chat.prototype._getChannelNode = function(callback){
+      var self = this;
+      this._stalk.ajax( '/node/'+self.appId+'/'+encodeURIComponent(self.channelId) , 'GET', {}, function(err, data){
+        if( err ){
+          callback( err, null);
+        } else if ( data.status == 'ok'){
+
+          var result = {
+            app: self.appId,
+            name: data.result.server.name,
+            url: data.result.server.url
+          };
+
+          callback( null, result );
+        }
+      }); 
+    };
+
+    Chat.prototype.connectChannel = function(node, callback){
+      var self = this;
+      var userId = self.currentUser ? self.currentUser.id : "someone";
+
+      var self = this;
+      var query =
+          'A='+self._stalk.appId+'&'+
+          'C='+self.channelId+'&'+
+          'U='+userId+'&'+
+          'S='+node.name;
+
+      self._socket = io.connect(node.url+'/channel?'+query, socketOptions);
+
+      self._socket.on('connect', function(){
+        debug( 'channel connection completed' );
+        self._connected = true;
+        if(callback) callback(self._socket);
+      });
+
+      self._socket.on('disconnect', function(){
+        self._connected = false;
+      });
+
+      self._socket.on('message', function(data){
+
+        if( self.onMessageCallback ){
+
+          if( typeof(data) == 'object' && data.user ) {
+            if( data.user._id == self.currentUser.id ){
+              data.sent = true;
+            }
+          }
+
+          self.onMessageCallback( data );
+        }
+      });
+    };
+
+    var messageTimeSort = function(a,b){
+      // created data
+      return a.createdAt > b.createdAt;
+    };
+
+    Chat.prototype.loadMessages = function(callback, datetime){
+
+      var self = this;
+      var Messages = Parse.Object.extend('Messages');
+      var Channels = Parse.Object.extend('Channels');
+
+      var channel = new Channels();
+      channel.id = self.channelId;
+
+      // init channel socket;
+      self._getSocket( function( socket ){
+      });
+
+      var query = new Parse.Query(Messages)
+        .equalTo("channel", channel)
+        .lessThan("createdAt", datetime ? new Date(datetime) : new Date())
+        .greaterThan("createdAt", new Date(self.createdAt))
+        .descending("createdAt")
+        .include("user") // TODO check performance issues ?
+        .limit(MESSAGE_SIZE)
+        .find({
+          success:function(lists) {
+
+            var messages = lists.map( ParseUtil.fromMessageToJSON );
+            callback( null, messages.sort(messageTimeSort) );
+          },
+          error: function(object, error) {
+            callback( error, null );
+          }
+        });
+    }; 
+
+    Chat.prototype.sendText = function(message){
+      var self = this;
+
+      var currentUser = Parse.User.current();
+
+      var data = { 
+        text: message,
+        user: { _id: currentUser.id, name: currentUser.username, avatar: currentUser.profileFileUrl },
+        _id: 'temp-id-' + self.channel + Math.round(Math.random() * 1000000)
+      };
+
+      self._getSocket( function( socket ){
+        socket.emit('send', {NM: 'message' , DT: data});
+      });
+    };
+
+    Chat.prototype.onMessage = function(callback){
+      this.onMessageCallback = callback;
+    };
+
+    Chat.prototype.sendImage = function(message){
+      var self = this;
+      var data = { image: message,
+        createdAt: Date.now(),
+        _id: 'temp-id-' + self.channel + Math.round(Math.random() * 1000000)
+      }
+    };
+
+    var ParseUtil = {};
+
+    ParseUtil.fromUserToJSON = function(user){
 
       var profileFileUrl = "";
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
         profileFileUrl = user.get('profileFile').url();
+      } else {
+        profileFileUrl = "https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png";   
       }
 
       return {
@@ -143,11 +404,13 @@
       };  
     };
 
-    UTILS.fromFollowToJSON = function(object){
+    ParseUtil.fromFollowToJSON = function(object){
       var user = object.get('userTo');
       var profileFileUrl = "";
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
         profileFileUrl = user.get('profileFile').url();
+      } else {
+        profileFileUrl = "https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png";   
       }
 
       var result = {
@@ -161,6 +424,199 @@
       };
 
       return result;
+    };
+
+    ParseUtil.fromChatToJSON = function(object){
+      if( !object ){
+        return null;
+      }
+
+      var channel = object.get("channel");
+      var users = channel.get("users");
+      var names = [];
+
+      var currentUser = Parse.User.current();
+
+      users.reduceRight(function(acc, user, index, object) {
+        if (user.id === currentUser.id) {
+          object.splice(index, 1);
+        } else {
+
+          object[index] = ParseUtil.fromUserToJSON(user);
+          names.push(user.get('nickName'));
+        }
+      }, []);
+
+      return {
+        id: object.id,
+        channelId: channel.id,
+        createdAt: object.get("createdAt"),
+        updatedAt: object.get("updatedAt"), // because of using javascript date objects instead of parse object 'object.createdAt',
+        name: names.join(", "),
+        uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
+        users
+      };
+    };
+
+    ParseUtil.fromMessageToJSON = function(object){
+      var user = object.get("user");
+      var profileFileUrl = user.get('profileFile') ? user.get('profileFile').url() : null;
+
+      var currentUser = Parse.User.current();
+
+      return {
+        _id: object.id,
+        text: object.get("message"),
+        createdAt: object.createdAt,
+        user: {
+          _id: user.id,
+          username: user.get('username'),
+          name: user.get('nickName'),
+          avatar: profileFileUrl
+        },
+        sent: user.id == currentUser.id,
+        image: object.get("image")
+      };
+    };
+
+    var _rest = function( context, method, data, headers, cb){
+      var self = this;
+
+      if(typeof(headers) == 'function' && !cb){
+        cb = headers;
+        headers = undefined;
+      }
+
+      var hostname = self.hostname.replace( "http://", "" );
+      var port = 8000;
+      if( hostname.indexOf( ":" ) > 0 ) {
+        hostname = hostname.split(":")[0];
+        port = hostname.split(":")[1]
+      }
+
+      var options = {
+        host: hostname,
+        port:port,
+        path: context,
+        method: method
+      };
+
+      if( headers ){
+        options.headers = headers;
+      } else {
+         options.headers = {};
+      }
+
+      options.headers['Content-Type'] = 'application/json';      
+
+      var result = '';
+      var request = http.request( options, function(res) {
+
+        res.setEncoding('utf8');
+        res.on("data", function(chunk) {    
+          result = result + chunk;      
+        });
+
+        res.on("end", function() {
+          var r = JSON.parse(result);
+          if(r.status != 'ok'){
+            cb(r.status,r.message);
+          }else{
+            cb(null,r);
+          }  
+        });
+
+      }).on('error', function(e) {
+        debug("ajax error: " + e.message);
+        cb('',result);
+      });
+      
+      if( method.toLowerCase() !== 'GET'.toLowerCase() ){
+        request.write(JSON.stringify(data));
+      }
+      request.end();
+    }
+
+    var _ajax = function( context, method, data, headers, cb){
+      var self = this;
+
+      if(typeof(headers) == 'function' && !cb){
+        cb = headers;
+        headers = false;
+      }
+
+      var xhr;
+      try{
+        xhr = new XMLHttpRequest();
+      }catch (e){
+        try{
+          xhr = new XDomainRequest();
+        } catch (e){
+          try{
+            xhr = new ActiveXObject('Msxml2.XMLHTTP');
+          }catch (e){
+            try{
+              xhr = new ActiveXObject('Microsoft.XMLHTTP');
+            }catch (e){
+              console.error('\nYour browser is not compatible with XPUSH AJAX');
+            }
+          }
+        }
+      }
+
+      var _url = self.hostname+context;
+
+      var param = Object.keys(data).map(function(k) {
+        return encodeURIComponent(k) + '=' + encodeURIComponent(data[k]);
+      }).join('&');
+
+      method = (method.toLowerCase() == "get") ? "GET":"POST";
+      param  = (param == null || param == "") ? null : param;
+      if(method == "GET" && param != null){
+        _url = _url + "?" + param;
+      }
+
+      xhr.open(method, _url, true);
+      xhr.onreadystatechange = function() {
+
+        if(xhr.readyState < 4) {
+          return;
+        }
+
+        if(xhr.status !== 200) {
+          debug("xpush : ajax error", self.hostname+context,param);
+          cb(xhr.status,{});
+        }
+
+        if(xhr.readyState === 4) {
+          var r = JSON.parse(xhr.responseText);
+          if(r.status != 'ok'){
+            cb(r.status,r.message);
+          }else{
+            cb(null,r);
+          }
+        }
+      };
+
+      debug("xpush : ajax ", self.hostname+context,method,param);
+
+      if(headers) {
+        for (var key in headers) {
+          if (headers.hasOwnProperty(key)) {
+            xhr.setRequestHeader(key, headers[key]);
+          }
+        }
+      }
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.send( (method == "POST") ? param : null);
+
+      return;
+    };
+
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+      Stalk.prototype.ajax = _rest;
+    } else {
+      Stalk.prototype.ajax = _ajax;
     }
 
     return Stalk;

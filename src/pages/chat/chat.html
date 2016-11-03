@@ -8,14 +8,14 @@
 
 <ion-content padding>
   <ol class="messages">
-    <li *ngFor="let message of messages;" [ngClass]="message.sr">
-      <div *ngIf=" message.type =='I' ">
+    <li *ngFor="let message of messages;" [ngClass]=" message.sent ? 'S':'R' ">
+      <div *ngIf=" message.image ">
         <span>
-          <img [src]="message.content"/>
+          <img [src]="message.image"/>
         </span>
       </div>
-      <div *ngIf=" message.type =='' ">
-        <span>{{message.content}}</span>
+      <div *ngIf=" message.text ">
+        <span>{{message.text}}</span>
       </div>
 	  </li>
   </ol>
