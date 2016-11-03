@@ -1,11 +1,38 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      About
+      Chats
     </ion-title>
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
-
+<ion-content>
+  <ion-list >
+    <ion-item-sliding *ngFor="let chat of chats; let inx = index">
+      <ion-item (click)="gotoChat(chat);">
+        <ion-avatar item-left>
+          <img src="{{chat.profileFileUrl}}">
+        </ion-avatar>
+        <h2>{{chat.name}}</h2>
+        <p>{{chat.latestMessage}}</p>
+        <ion-note item-right>{{chat.updatedAt}}</ion-note>
+      </ion-item>
+      <ion-item-options side="left">
+        <button ion-button color="primary">
+          <ion-icon name="text"></ion-icon>
+          Text
+        </button>
+        <button ion-button color="secondary">
+          <ion-icon name="call"></ion-icon>
+          Call
+        </button>
+      </ion-item-options>
+      <ion-item-options side="right">
+        <button ion-button color="danger" (click)="removeChat(chat, inx)">
+          <ion-icon name="exit"></ion-icon>
+          Exit
+        </button>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
 </ion-content>

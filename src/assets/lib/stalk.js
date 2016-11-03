@@ -225,6 +225,28 @@
       });
     };
 
+    Stalk.prototype.loadChats = function(callback){
+      var currentUser = Parse.User.current();
+
+      var self = this;
+      var Chats = Parse.Object.extend('Chats');
+
+      var query = new Parse.Query(Chats)
+        .equalTo('user', currentUser)
+        .include('channel.users')
+        .descending("updatedAt");
+
+      query.find({
+        success:function(lists) {
+          var chats = lists.map( ParseUtil.fromChatToJSON );
+          callback( null, chats );
+        },
+        error: function(object, error) {
+          callback( error, null );
+        }
+      }); 
+    };
+
     var Chat = function(stalk, data){
       var self = this;
       self._stalk = stalk;
@@ -427,6 +449,7 @@
     };
 
     ParseUtil.fromChatToJSON = function(object){
+
       if( !object ){
         return null;
       }
@@ -436,7 +459,6 @@
       var names = [];
 
       var currentUser = Parse.User.current();
-
       users.reduceRight(function(acc, user, index, object) {
         if (user.id === currentUser.id) {
           object.splice(index, 1);
@@ -450,8 +472,8 @@
       return {
         id: object.id,
         channelId: channel.id,
-        createdAt: object.get("createdAt"),
-        updatedAt: object.get("updatedAt"), // because of using javascript date objects instead of parse object 'object.createdAt',
+        createdAt: timeToString(Date.parse(object.get("createdAt")))[0],
+        updatedAt: timeToString(Date.parse(object.get("updatedAt")))[0],
         name: names.join(", "),
         uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
         users
@@ -477,6 +499,44 @@
         sent: user.id == currentUser.id,
         image: object.get("image")
       };
+    };
+
+    var timeToString =function(timestamp){
+      var cDate = new Date();
+
+      var cYyyymmdd = cDate.getFullYear() + "" + (cDate.getMonth() + 1) + "" + cDate.getDate();
+      var date = new Date(timestamp);
+
+      var yyyy = date.getFullYear();
+      var mm = date.getMonth() + 1;
+      mm = mm >= 10 ? "" + mm : "0" + mm;
+
+      var dd = date.getDate();
+      dd = dd >= 10 ? "" + dd : "0" + dd;
+
+      var hour = date.getHours();
+      hour = hour >= 10 ? hour : "0" + hour;
+
+      var minute = date.getMinutes();
+      minute = minute >= 10 ? "" + minute : "0" + minute;
+
+      var second = date.getSeconds();
+      second = second >= 10 ? "" + second : "0" + second;
+
+      var yyyymmdd = yyyy + "" + mm + "" + dd;
+
+      var result = [];
+      if (cYyyymmdd != yyyymmdd) {
+        result.push(yyyy + "-" + mm + "-" + dd);
+      } else {
+        result.push(hour + ":" + minute + ":" + second);
+      }
+
+      result.push(yyyy + "-" + mm + "-" + dd);
+      result.push(hour + ":" + minute + ":" + second);
+      result.push(date.toLocaleTimeString());
+
+      return result;  
     };
 
     var _rest = function( context, method, data, headers, cb){
