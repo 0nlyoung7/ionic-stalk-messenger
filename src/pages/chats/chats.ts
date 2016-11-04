@@ -5,10 +5,10 @@ import { NavController } from 'ionic-angular';
 import {SharedService} from '../../app/sharedService';
 
 @Component({
-  selector: 'page-about',
-  templateUrl: 'about.html'
+  selector: 'page-chats',
+  templateUrl: 'chats.html'
 })
-export class AboutPage {
+export class ChatsPage {
 
   chats:any[] = [];
 

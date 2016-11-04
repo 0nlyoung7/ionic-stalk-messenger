@@ -44,7 +44,6 @@ export class SearchUserPage {
 
   addFollow = () => {
     var self = this;
-    var keys = 0;
 
     for( var key in this.checkedList ){
       if( this.checkedList[key] ){

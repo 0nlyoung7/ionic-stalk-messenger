@@ -8,10 +8,10 @@ import { ChatPage } from '../chat/chat';
 import { SearchUserPage } from './searchUser';
 
 @Component({
-  selector: 'page-follow',
-  templateUrl: 'follow.html'
+  selector: 'page-follows',
+  templateUrl: 'follows.html'
 })
-export class FollowPage {
+export class FollowsPage {
 
   users:any[] = [];
 

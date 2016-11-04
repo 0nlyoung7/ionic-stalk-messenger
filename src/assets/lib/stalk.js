@@ -409,16 +409,18 @@
 
     ParseUtil.fromUserToJSON = function(user){
 
+      var username = user.get('username');
+
       var profileFileUrl = "";
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
         profileFileUrl = user.get('profileFile').url();
       } else {
-        profileFileUrl = "https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png";   
+        profileFileUrl = Util.getDefaultProfile( username ); 
       }
 
       return {
         id: user.id,
-        username: user.get('username'),
+        username: username,
         email: user.get('email'),
         nickName: user.get('nickName'),
         profileFileUrl: profileFileUrl,
@@ -428,17 +430,19 @@
 
     ParseUtil.fromFollowToJSON = function(object){
       var user = object.get('userTo');
+      var username = user.get('username');
+
       var profileFileUrl = "";
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
         profileFileUrl = user.get('profileFile').url();
       } else {
-        profileFileUrl = "https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png";   
+        profileFileUrl = Util.getDefaultProfile( username );   
       }
 
       var result = {
         followId: object.id,
         id: user.id,
-        username: user.get('username'),
+        username: username,
         email: user.get('email'),
         nickName: user.get('nickName'),
         statusMessage: user.get('statusMessage'),
@@ -472,8 +476,8 @@
       return {
         id: object.id,
         channelId: channel.id,
-        createdAt: timeToString(Date.parse(object.get("createdAt")))[0],
-        updatedAt: timeToString(Date.parse(object.get("updatedAt")))[0],
+        createdAt: Util.dateToString(object.get("createdAt")),
+        updatedAt: Util.dateToString(object.get("updatedAt")),
         name: names.join(", "),
         uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
         users
@@ -501,11 +505,48 @@
       };
     };
 
-    var timeToString =function(timestamp){
+    var Util= {};
+
+    Util.getDefaultProfile = function(str){
+      var result = "https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png";
+
+      if (str.search(/[^a-zA-Z]+/) === -1) {
+
+        var firstChar = str.substring(0,1);
+        var rgb = Util.getRGBFromStr(str);
+
+        result = "https://avatars.discourse.org/v2/letter/"+firstChar+"/"+rgb+"/50.png";
+      }
+
+      return result;
+    }
+
+    Util.getRGBFromStr = function( str ){
+      return Util.intToRGB(Util.hashCode(str));
+    };
+
+    Util.hashCode = function(str) { // java String#hashCode
+      var hash = 0;
+      for (var i = 0; i < str.length; i++) {
+         hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return hash;
+    };
+
+    Util.intToRGB = function(i){
+      var c = (i & 0x00FFFFFF)
+          .toString(16)
+          .toUpperCase();
+
+      return "00000".substring(0, 6 - c.length) + c;
+    };
+
+    Util.dateToString =function(paramDate, type){
+
       var cDate = new Date();
 
       var cYyyymmdd = cDate.getFullYear() + "" + (cDate.getMonth() + 1) + "" + cDate.getDate();
-      var date = new Date(timestamp);
+      var date = new Date(paramDate);
 
       var yyyy = date.getFullYear();
       var mm = date.getMonth() + 1;
@@ -536,7 +577,11 @@
       result.push(hour + ":" + minute + ":" + second);
       result.push(date.toLocaleTimeString());
 
-      return result;  
+      if( type == undefined ){
+        type = 0;
+      }
+
+      return result[type];  
     };
 
     var _rest = function( context, method, data, headers, cb){
