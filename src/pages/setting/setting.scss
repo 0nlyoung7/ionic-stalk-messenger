@@ -1,3 +1,17 @@
 page-setting {
+  .profile {
 
+    ion-avatar {
+      text-align: center;
+      margin: 0px auto;
+      float: none;
+      display: table;
+    }
+
+    ion-avatar img {
+      width: 160px;
+      height: 160px;
+      border-radius: 80px;    
+    }
+  }
 }

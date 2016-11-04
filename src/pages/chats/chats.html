@@ -11,7 +11,7 @@
     <ion-item-sliding *ngFor="let chat of chats; let inx = index">
       <ion-item (click)="gotoChat(chat);">
         <ion-avatar item-left>
-          <img src="{{chat.profileFileUrl}}">
+          <img src="{{chat.image}}">
         </ion-avatar>
         <h2>{{chat.name}}</h2>
         <p>{{chat.latestMessage}}</p>

@@ -19,10 +19,11 @@ export class ChatPage {
 
   constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private navParams: NavParams) {
 
-    let users = navParams.get('users');
+    let paramChat = navParams.get('paramChat');
 
     var self = this;
-    ss.stalk.createChat( users, function( err, chat ){
+
+    ss.stalk.openChat( paramChat, function( err, chat ){
 
       self.channelId = chat.channelId;
       self.chat = chat;

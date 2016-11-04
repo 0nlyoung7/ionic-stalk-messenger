@@ -14,6 +14,7 @@ import { ChatsPage } from '../pages/chats/chats';
 import { ChatPage } from '../pages/chat/chat';
 
 import { SettingPage } from '../pages/setting/setting';
+import { SettingFormPage } from '../pages/setting/settingForm';
 
 //GlobalVariable
 import {SharedService} from './sharedService';
@@ -28,7 +29,8 @@ import {SharedService} from './sharedService';
     SearchUserPage,
     ChatsPage,
     ChatPage,
-    SettingPage
+    SettingPage,
+    SettingFormPage
   ],
   imports: [
     IonicModule.forRoot(MyApp)
@@ -43,7 +45,8 @@ import {SharedService} from './sharedService';
     SearchUserPage,
     ChatsPage,
     ChatPage,
-    SettingPage
+    SettingPage,
+    SettingFormPage
   ],
   providers: [SharedService]
 })

@@ -26,6 +26,7 @@
       self.appId = appId;
       self.hostname = host;
       self.chats = {};
+      self.currentUser = {};
 
       Parse.initialize(appId);
       Parse.serverURL = self.hostname+'/parse';
@@ -97,9 +98,15 @@
     };
 
     Stalk.prototype.logIn = function(username, password, callback){
+      var self = this;
       Parse.User.logIn(username, password, {
         success: function(user) {
           // Do stuff after successful login.
+          var jsonUser = ParseUtil.fromUserToJSON(user);
+          self.currentUser = jsonUser;
+
+          // profile size 가공 
+          self.currentUser.profileFileUrl = Util.getDefaultProfile( jsonUser.username, 160 );
           callback( null, ParseUtil.fromUserToJSON(user) );
         },
         error: function(user, error) {
@@ -183,7 +190,19 @@
       });      
     };
 
+    Stalk.prototype.openChat = function(data, callback){
+      var self = this;
+
+      if( data.id && self.chats[data.id] ){
+        callback( null, self.chats[data.id] );
+        return;
+      }
+
+      self.createChat(data.users, callback);
+    };
+
     Stalk.prototype.createChat = function(users, callback){
+
       var self = this;
       var ids = [];
       users.forEach( function(user) {
@@ -192,10 +211,6 @@
 
       Parse.Cloud.run('chats-create', { ids: ids }, {
         success:function(result) {
-          if( self.chats[result.id] ){
-            callback( null, self.chats[result.id] );
-            return;
-          }
 
           self.getChatById( result.id, function( err, chat ){
             callback( null, chat );
@@ -209,12 +224,19 @@
 
     Stalk.prototype.getChatById = function(chatId, callback){
       var self = this;
+
+      if( self.chats[chatId] ){
+        callback( null, self.chats[chatId] );
+        return;
+      }
+
       var Chats = Parse.Object.extend('Chats');
 
       var query = new Parse.Query(Chats)
       .include('channel.users')
       .get(chatId, {
         success:function(chat) {
+
           var newChat = new Chat(self, ParseUtil.fromChatToJSON(chat) );
           self.chats[newChat.id] = newChat;
           callback( null, newChat  );
@@ -473,6 +495,9 @@
         }
       }, []);
 
+      var name = names.join(", ");
+      var image = Util.getDefaultProfile( name );
+
       return {
         id: object.id,
         channelId: channel.id,
@@ -480,7 +505,8 @@
         updatedAt: Util.dateToString(object.get("updatedAt")),
         name: names.join(", "),
         uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
-        users
+        users: users,
+        image: image
       };
     };
 
@@ -507,15 +533,18 @@
 
     var Util= {};
 
-    Util.getDefaultProfile = function(str){
+    Util.getDefaultProfile = function(str, size){
       var result = "https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png";
 
       if (str.search(/[^a-zA-Z]+/) === -1) {
 
         var firstChar = str.substring(0,1);
         var rgb = Util.getRGBFromStr(str);
+        if( !size ){
+          size = 50;
+        }
 
-        result = "https://avatars.discourse.org/v2/letter/"+firstChar+"/"+rgb+"/50.png";
+        result = "https://avatars.discourse.org/v2/letter/"+firstChar+"/"+rgb+"/"+size+".png";
       }
 
       return result;
