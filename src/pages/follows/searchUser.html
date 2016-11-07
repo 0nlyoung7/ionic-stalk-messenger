@@ -15,8 +15,7 @@
     <ion-item *ngFor="let user of users;">
       <ion-checkbox color="primary" checked="false" [(ngModel)]="checkedList[user.id]"></ion-checkbox>
       <ion-avatar item-left>
-        <img src="{{user.image}}" *ngIf=" !!user.image ">
-        <img src="https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png" *ngIf=" !user.image ">
+        <img src="{{user.avatar}}" />
       </ion-avatar>
       <ion-label>{{user.nickName}}</ion-label>
     </ion-item>

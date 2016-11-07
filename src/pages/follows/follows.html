@@ -11,7 +11,7 @@
     <ion-item-sliding *ngFor="let user of users; let inx = index">
       <ion-item (click)="gotoChat(user);">
         <ion-avatar item-left>
-          <img src="{{user.profileFileUrl}}">
+          <img src="{{user.avatar}}">
         </ion-avatar>
         <h2>{{user.nickName}}</h2>
         <p>{{user.statusMessage}}</p>
