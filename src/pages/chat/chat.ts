@@ -62,11 +62,7 @@ export class ChatPage {
   scrollToBottom(){
     var self = this;
     setTimeout(function(){
-      try {
-        self.content.scrollToBottom(100);
-      } catch ( err ){
-        console.log( err );
-      }
+      var dimensions = self.content.scrollToBottom(100);
     }, 100);
   }
 }

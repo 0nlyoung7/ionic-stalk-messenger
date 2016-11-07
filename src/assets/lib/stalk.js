@@ -22,22 +22,12 @@
     };
 
     var Stalk = function(host, appId){
-      if( appId == undefined ){
-        appId = 'STALK';
-      }
-
-      if( host.endsWith("/") ){
-        host = host.substring(0, host.lastIndexOf("/") ); 
-      }
-
-      console.log( host );
-
       var self = this;
       self.appId = appId;
       self.hostname = host;
       self._channels = {};
-      self._currentUser = undefined;
-      self._currentChannel = undefined;
+      self._currentUser = {};
+      self._currentChannel = {};
 
       Parse.initialize(appId);
       Parse.serverURL = self.hostname+'/parse';
@@ -185,18 +175,6 @@
     };
 
     /**
-     * 현재 활성화된 채널을 가져온다.
-     * @name currentChannel
-     * @memberof Stalk
-     * @function
-     * @example
-     * stalk.currentChannel()
-     */
-    Stalk.prototype.currentChannel = function(){
-      return this._currentChannel;
-    };
-
-    /**
      * 현재 로그인한 유저의 정보를 수정한다.
      * @name updateUser
      * @memberof Stalk
@@ -236,7 +214,7 @@
       user.save(null, {
         success: function(user) {
           if( key == 'profileFile' ){
-            self._currentUser.avatar = user.get('profileFile').url();
+            self._currentUser.profileFileUrl = user.get('profileFile').url();
           } else {
             self._currentUser[key] = data;
           }
@@ -401,43 +379,6 @@
       }
     };
 
-    /**
-     * 채팅을 위한 채널에 접속한다. ( 로그인 불필요 )
-     * @name openSimpleChannel
-     * @memberof Stalk
-     * @function
-     * @param {string} channelId - channelId
-     * @param {object} userObj - userObj
-     * @param {callback} callback - channel 오픈 후에 호출되는 함수
-     * @example1
-     * stalk.openSimpleChannel('channel01', function( err, channel ){
-     *   console.log( channel );
-     * });
-     * @example2
-     * stalk.openSimpleChannel('channel01', {id:'james'}, function( err, channel ){
-     *   console.log( channel );
-     * });
-     */
-    Stalk.prototype.openSimpleChannel = function(channelId, userObj, callback){
-      var self = this;
-      var data = {channelId:channelId};
-
-      if(typeof(userObj) == 'function' && !callback){
-        callback = userObj;
-        userObj = undefined;
-      }
-
-      if( userObj ){
-        self._currentUser = userObj;
-      }
-
-      var channel = new Channel(self, data);
-      channel._getSocket( function(socket){
-        self._currentChannel = channel;
-        callback( null, channel ); 
-      });
-    };
-
     Stalk.prototype._createChat = function(users, callback){
 
       var self = this;
@@ -551,15 +492,15 @@
       var self = this;
       self._stalk = stalk;
 
-      if(data.id) self.id = data.id;
+      self.id = data.id;
       self.channelId = data.channelId;
-      if(data.createdAt) self.createdAt = data.createdAt;
-      if(data.updatedAt) self.updatedAt = data.updatedAt;
-      if(data.name) self.name = data.name;
-      if(data.uid) self.uid = data.uid;
-      if(data.users) self.users = data.users;
+      self.createdAt = data.createdAt;
+      self.updatedAt = data.updatedAt;
+      self.name = data.name;
+      self.uid = data.uid;
+      self.users = data.users;
 
-      if(stalk._currentUser) self._currentUser = stalk._currentUser;
+      self._currentUser = stalk._currentUser;
 
       // channel connection;
       self._socket;
@@ -585,13 +526,13 @@
 
     Channel.prototype._getChannelNode = function(callback){
       var self = this;
-      this._stalk.ajax( '/node/'+self._stalk.appId+'/'+encodeURIComponent(self.channelId) , 'GET', {}, function(err, data){
+      this._stalk.ajax( '/node/'+self.appId+'/'+encodeURIComponent(self.channelId) , 'GET', {}, function(err, data){
         if( err ){
           callback( err, null);
         } else if ( data.status == 'ok'){
 
           var result = {
-            app: self._stalk.appId,
+            app: self.appId,
             name: data.result.server.name,
             url: data.result.server.url
           };
@@ -603,8 +544,7 @@
 
     Channel.prototype._connectChannel = function(node, callback){
       var self = this;
-      var userId = self._currentUser && self._currentUser.id ? self._currentUser.id : Util.getUniqueKey();
-      self._currentUser.id = userId;
+      var userId = self._currentUser ? self._currentUser.id : "someone";
 
       var self = this;
       var query =
@@ -704,7 +644,7 @@
 
       var data = { 
         text: message,
-        user: { _id: currentUser.id, name: currentUser.username, avatar: currentUser.avatar },
+        user: { _id: currentUser.id, name: currentUser.username, avatar: currentUser.profileFileUrl },
         _id: 'temp-id-' + self.channel +"_"+Date.now()
       };
 
@@ -733,7 +673,7 @@
 
       var data = {
         image: imageUrl,
-        user: { _id: currentUser.id, name: currentUser.username, avatar: currentUser.avatar },
+        user: { _id: currentUser.id, name: currentUser.username, avatar: currentUser.profileFileUrl },
         _id: 'temp-id-' + self.channel +"_"+ Date.now()
       }
 
@@ -774,18 +714,17 @@
       }
 
       var parseFile = new Parse.File(name, file);
+      var Channels = Parse.Object.extend('Channels');
       var UploadFiles = Parse.Object.extend('UploadFiles');
-      var uploadFile = new UploadFiles();
 
-      if( Parse.User.current() ){
-        var user = new Parse.User();
-        user.id = Parse.User.current().id;
-        uploadFile.set("user",     user    );
-      }
+      var user = new Parse.User();
+      user.id = Parse.User.current().id;
 
-      uploadFile.set("file",  parseFile  );
+      var uploadFiles = new UploadFiles();
+      uploadFiles.set("user",     user    );
+      uploadFiles.set("file",  parseFile  );
 
-      uploadFile.save().then(function() {
+      uploadFiles.save().then(function() {
 
         var uploadedUrl = parseFile.url();
         inputFile.value = '';        
@@ -802,11 +741,11 @@
     ParseUtil.fromUserToJSON = function(user, size){
       var username = user.get('username');
 
-      var avatar = "";
+      var profileFileUrl = "";
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
-        avatar = user.get('profileFile').url();
+        profileFileUrl = user.get('profileFile').url();
       } else {
-        avatar = Util.getDefaultProfile( username, size); 
+        profileFileUrl = Util.getDefaultProfile( username, size); 
       }
 
       return {
@@ -814,7 +753,7 @@
         username: username,
         email: user.get('email'),
         nickName: user.get('nickName'),
-        avatar: avatar,
+        profileFileUrl: profileFileUrl,
         statusMessage: user.get('statusMessage'),
       }; 
     };
@@ -823,11 +762,11 @@
       var user = object.get('userTo');
       var username = user.get('username');
 
-      var avatar = "";
+      var profileFileUrl = "";
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
-        avatar = user.get('profileFile').url();
+        profileFileUrl = user.get('profileFile').url();
       } else {
-        avatar = Util.getDefaultProfile( username );   
+        profileFileUrl = Util.getDefaultProfile( username );   
       }
 
       var result = {
@@ -837,7 +776,7 @@
         email: user.get('email'),
         nickName: user.get('nickName'),
         statusMessage: user.get('statusMessage'),
-        avatar: avatar,
+        profileFileUrl: profileFileUrl,
       };
 
       return result;
@@ -945,7 +884,7 @@
 
     ParseUtil.fromMessageToJSON = function(object){
       var user = object.get("user");
-      var avatar = user.get('profileFile') ? user.get('profileFile').url() : null;
+      var profileFileUrl = user.get('profileFile') ? user.get('profileFile').url() : null;
 
       var currentUser = Parse.User.current();
 
@@ -957,7 +896,7 @@
           _id: user.id,
           username: user.get('username'),
           name: user.get('nickName'),
-          avatar: avatar
+          avatar: profileFileUrl
         },
         sent: user.id == currentUser.id,
         image: object.get("image")
@@ -1001,16 +940,6 @@
 
       return "00000".substring(0, 6 - c.length) + c;
     };
-
-    Util.getUniqueKey = function () {
-      var s = [], itoh = '0123456789ABCDEF';
-      for (var i = 0; i < 36; i++) s[i] = Math.floor(Math.random() * 0x10);
-      s[14] = 4;
-      s[19] = (s[19] & 0x3) | 0x8;
-      for (var x = 0; x < 36; x++) s[x] = itoh[s[x]];
-      s[8] = s[13] = s[18] = s[23] = '-';
-      return s.join('');
-    },
 
     Util.dateToString =function(paramDate, type){
 
