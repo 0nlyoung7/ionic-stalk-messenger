@@ -16,6 +16,9 @@ export class ChatsPage {
 
   constructor(public navCtrl: NavController, public ss: SharedService, private app:App ) {
     var self = this;
+    this.ss.stalk.loadChannels( function(err, chats){
+      self.chats = chats;
+    });
   }
 
   public gotoChat = (channel) => {

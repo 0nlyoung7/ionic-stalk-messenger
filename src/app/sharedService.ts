@@ -4,10 +4,8 @@ declare var Stalk: any;
 
 @Injectable()
 export class SharedService {
-  public host = 'http://127.0.0.1:8080';
-  public app = 'chat-tutorial';
-
-  xpush:any;
+  public host = 'https://im.stalk.io';
+  public app = 'STALK';
   stalk:any;
 
   constructor() {
