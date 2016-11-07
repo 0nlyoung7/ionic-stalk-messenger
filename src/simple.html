@@ -41,11 +41,13 @@ $(document).ready( function(){
     });
   });
 });
+
 var send = function( ){
   var msg = $( "#message" ).val();
   stalk.currentChannel().sendText( msg );
   $( "#message" ).val('');
 };
+
 </script>
 </head>
 
