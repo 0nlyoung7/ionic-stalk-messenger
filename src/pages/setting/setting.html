@@ -6,7 +6,7 @@
 
 <ion-content class="profile">
   <ion-list >
-    <ion-avatar>
+    <ion-avatar (click)="selectFile()">
       <img src="{{user.profileFileUrl}}">
     </ion-avatar>
     <ion-item detail-none (click)="gotoSettingForm('nickName', 'Nickname')">
@@ -22,4 +22,5 @@
     </ion-item>
 
   </ion-list>
+  <input type="file" #fileInput id="file" style="display:none" (change)="onFileChange($event, fileInput.value)" />
 </ion-content>

@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, Renderer } from '@angular/core';
 
-import { NavController, NavParams } from 'ionic-angular';
+import { NavController, NavParams, Content } from 'ionic-angular';
 
 import {SharedService} from '../../app/sharedService';
 
@@ -10,30 +10,32 @@ import {SharedService} from '../../app/sharedService';
 })
 export class ChatPage {
 
-  channelId: string;
   inputMessage: any;
   messages:any[] = [];
-  chat:any;
+  channel:any;
 
+  @ViewChild(Content) content: Content;
   @ViewChild('fileInput') fileInput:ElementRef;
 
   constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private navParams: NavParams) {
 
-    let paramChat = navParams.get('paramChat');
+    let users = navParams.get('users');
+    let channelId = navParams.get('channelId');
 
     var self = this;
 
-    ss.stalk.openChat( paramChat, function( err, chat ){
+    ss.stalk.openChannel( channelId, users, function( err, channel ){
 
-      self.channelId = chat.channelId;
-      self.chat = chat;
+      self.channel = channel;
 
-      chat.loadMessages( function(err, messages ){
+      channel.loadMessages( function(err, messages ){
         self.messages = messages;
+        self.scrollToBottom();
       });
 
-      chat.onMessage( function(data){
+      channel.onMessage( function(data){
         self.messages.push( data );
+        self.scrollToBottom();
       });
     });
   }
@@ -41,7 +43,26 @@ export class ChatPage {
   public send = () => {
     var msg = this.inputMessage;
 
-    this.chat.sendText( msg );
+    this.channel.sendText( msg );
     this.inputMessage = '';
+  }
+
+  public selectFile = function () {
+    var event = new MouseEvent('click', { bubbles: true });
+    this.renderer.invokeElementMethod(this.fileInput.nativeElement, 'dispatchEvent', [event]);
+  };
+
+  public onFileChange = function ($event, fileValue) {
+    var self = this;
+    self.channel.sendImageFile(self.fileInput.nativeElement, function (error, result) {
+      console.log( result );
+    });
+  };
+
+  scrollToBottom(){
+    var self = this;
+    setTimeout(function(){
+      var dimensions = self.content.scrollToBottom(100);
+    }, 100);
   }
 }

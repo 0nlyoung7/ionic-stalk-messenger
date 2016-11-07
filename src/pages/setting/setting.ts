@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild, Renderer } from '@angular/core';
 
 import { NavController, App } from 'ionic-angular';
 
@@ -15,18 +15,26 @@ export class SettingPage {
 
   user:any;
 
-  constructor(public navCtrl: NavController, public ss: SharedService, private app:App) {
-    this.user = ss.stalk.currentUser;
+  @ViewChild('fileInput') fileInput:ElementRef;
+
+  constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private app:App) {
+    this.user = ss.stalk.currentUser();
   }
 
-  public updateImage(){
-    var imgBase64;
-    this.ss.stalk.updateUser( "profileFile", imgBase64, function(err, user){
+  public gotoSettingForm(propKey,propKeyNm){
+    this.app.getRootNav().push(SettingFormPage, {"propKey":propKey,"propKeyNm":propKeyNm});
+  }
 
+  public selectFile = () => {
+    let event = new MouseEvent('click', {bubbles: true});
+    this.renderer.invokeElementMethod(this.fileInput.nativeElement, 'dispatchEvent', [event]);
+  }
+
+  public onFileChange = ($event, fileValue) => {
+    var self = this;
+
+    this.ss.stalk.updateUser( "profileFile", self.fileInput.nativeElement, function(err, user){
+      console.log( user );
     });
-  }
-
-  public gotoSettingForm(settingKey,settingKeyNm){
-    this.app.getRootNav().push(SettingFormPage, {"settingKey":settingKey,"settingKeyNm":settingKeyNm});
   }
 }

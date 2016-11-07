@@ -23,8 +23,7 @@ export class FollowsPage {
   }
 
   public gotoChat = (user) => {
-    var paramChat = {users:[user]};
-    this.app.getRootNav().push(ChatPage, {paramChat:paramChat});
+    this.app.getRootNav().push(ChatPage, {users:[user]});
   }
 
   public openSearchUser = () =>{

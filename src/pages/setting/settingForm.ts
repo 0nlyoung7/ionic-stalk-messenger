@@ -10,21 +10,20 @@ import {SharedService} from '../../app/sharedService';
 })
 export class SettingFormPage {
 
-  settingValue:string;
-  settingKey:string;
-  settingKeyNm:string;
+  propValue:string;
+  propKey:string;
+  propKeyNm:string;
 
   constructor(public navCtrl: NavController, public ss: SharedService, private navParams: NavParams ) {
 
-    this.settingKey = navParams.get('settingKey');
-    this.settingKeyNm = navParams.get('settingKeyNm');
-
-    this.settingValue = ss.stalk.currentUser[this.settingKey];
+    this.propKey = navParams.get('propKey');
+    this.propKeyNm = navParams.get('propKeyNm');
+    this.propValue = ss.stalk.currentUser()[this.propKey];
   }
 
   public updateUser(){
     var self = this;
-    self.ss.stalk.updateUser( self.settingKey, self.settingValue, function(err, user){
+    self.ss.stalk.updateUser( self.propKey, self.propValue, function(err, user){
       if( err ){
         return;
       }
@@ -33,6 +32,6 @@ export class SettingFormPage {
   }
 
   public clearValue(){
-    this.settingValue = "";
+    this.propValue = "";
   }
 }

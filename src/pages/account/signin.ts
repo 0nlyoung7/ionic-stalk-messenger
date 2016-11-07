@@ -23,7 +23,6 @@ export class SignInPage {
 
   public signIn(){
     var self = this;
-
     this.ss.stalk.logIn(this.userId, this.password, function(err, user){
       if( err ){
         var message = err.message;

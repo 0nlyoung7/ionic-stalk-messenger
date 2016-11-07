@@ -1,6 +1,6 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>{{settingKeyNm}}</ion-title>
+    <ion-title>{{propKeyNm}}</ion-title>
     <ion-buttons end>
       <button ion-button color="royal" (click)="updateUser();">OK</button>
     </ion-buttons>
@@ -10,10 +10,10 @@
 <ion-content>
   <ion-list no-border>
     <ion-list-header>
-      Please input {{settingKeyNm}}
+      Please input {{propKeyNm}}
     </ion-list-header>
     <ion-item>
-      <ion-input type="text" [(ngModel)]="settingValue" ></ion-input>
+      <ion-input type="text" [(ngModel)]="propValue" ></ion-input>
       <ion-icon name="close-circle" item-right (click)="clearValue();"></ion-icon>
     </ion-item>
   </ion-list>

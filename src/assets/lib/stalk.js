@@ -25,8 +25,9 @@
       var self = this;
       self.appId = appId;
       self.hostname = host;
-      self.chats = {};
-      self.currentUser = {};
+      self._channels = {};
+      self._currentUser = {};
+      self._currentChannel = {};
 
       Parse.initialize(appId);
       Parse.serverURL = self.hostname+'/parse';
@@ -37,11 +38,11 @@
     /**
      * debug 기능을 켠다.
      * @name enableDebug
-     * @memberof Xpush
+     * @memberof Stalk
      * @function
      * @example
      * // enable debug
-     * xpush.enableDebug();
+     * stalk.enableDebug();
      */
     Stalk.prototype.enableDebug = function(){
       if( oldDebug ){
@@ -66,11 +67,11 @@
     /**
      * debug 기능을 끈다.
      * @name disableDebug
-     * @memberof Xpush
+     * @memberof Stalk
      * @function
      * @example
      * // disable debug
-     * xpush.disableDebug();
+     * stalk.disableDebug();
      */
     Stalk.prototype.disableDebug = function(){
       // Init debug funciton
@@ -80,12 +81,36 @@
       oldDebug = undefined;
     };
 
-    Stalk.prototype.signUp = function(username, password, callback){
+    /**
+     * 회원 가입
+     * @name signUp
+     * @memberof Stalk
+     * @function
+     * @param {string} username - 사용자 이름(or email)
+     * @param {string} password - 비밀번호
+     * @param {Object} attrs - 신규 유저에게 설정할 추가 필드
+     * @param {callback} callback - 회원가입 후 수행할 callback function
+     * @example
+     * stalk.signUp("james", "1234", function(err, result){
+     *  console.log( result );
+     * });
+     */
+    Stalk.prototype.signUp = function(username, password, attrs, callback){
+
+      if(typeof(attrs) == 'function' && !callback){
+        callback = attrs;
+        attrs = undefined;
+      }
 
       var user = new Parse.User();
       user.set("username", username);
       user.set("password", password);
       user.set("nickName", username);
+      if( attrs ){
+        for( var key in attrs ){
+          user.set(key, attrs[key]);
+        }
+      }
 
       user.signUp(null, {
         success: function(user) {
@@ -97,17 +122,27 @@
       });
     };
 
+    /**
+     * 로그인 하기
+     * @name logIn
+     * @memberof Stalk
+     * @function
+     * @param {string} username - 사용자 이름(or email)
+     * @param {string} password - 비밀번호
+     * @param {callback} callback - 회원가입 후 수행할 callback function
+     * @example
+     * stalk.logIn(username, password, function(err, result){
+     *  console.log( result );
+     * });
+     */
     Stalk.prototype.logIn = function(username, password, callback){
       var self = this;
       Parse.User.logIn(username, password, {
         success: function(user) {
           // Do stuff after successful login.
-          var jsonUser = ParseUtil.fromUserToJSON(user);
-          self.currentUser = jsonUser;
-
-          // profile size 가공 
-          self.currentUser.profileFileUrl = Util.getDefaultProfile( jsonUser.username, 160 );
-          callback( null, ParseUtil.fromUserToJSON(user) );
+          var jsonUser = ParseUtil.fromUserToJSON(user, 160);
+          self._currentUser = jsonUser;
+          callback( null, jsonUser );
         },
         error: function(user, error) {
           // The login failed. Check error to see why.
@@ -116,30 +151,100 @@
       });
     };
 
+    /**
+     * 로그 아웃
+     * @name logOut
+     * @memberof Stalk
+     * @example
+     * stalk.logOut()
+     */
     Stalk.prototype.logOut = function(){
       Parse.User.logOut();
     };
 
-    Stalk.prototype.loadFollows = function(callback){
-      var currentUser = Parse.User.current();
-      var Follows = Parse.Object.extend('Follows');
+    /**
+     * 현재 로그인한 유저의 정보를 가져온다.
+     * @name currentUser
+     * @memberof Stalk
+     * @function
+     * @example
+     * stalk.currentUser()
+     */
+    Stalk.prototype.currentUser = function(){
+      return this._currentUser;
+    };
 
-      var query = new Parse.Query(Follows)
-        .equalTo('userFrom', currentUser)
-        .include('userTo')
-        .ascending('nickName');
+    /**
+     * 현재 로그인한 유저의 정보를 수정한다.
+     * @name updateUser
+     * @memberof Stalk
+     * @function
+     * @param {string} key - user 객체에 추가해야할 key
+     * @param {string} value - user 객체에 추가해야할 key에 매핑되는 value
+     * @param {callback} callback - 사용자 정보를 수정후 호출되는 callback
+     * @example
+     * stalk.updateUser( 'nickName', '파인애플', function(err, user){
+     *   console.log( user );
+     * });
+     */
+    Stalk.prototype.updateUser = function(key, value, callback) {
 
-      query.find({
-        success:function(results) {
-          callback( null, results.map(ParseUtil.fromFollowToJSON) )
+      var self = this;
+      var user = Parse.User.current();
+
+      var data = value;
+      if( key == 'profileFile' ){
+
+        var file = value;
+        if( typeof( value ) == 'object' ){
+          var fileUploadControl = value;
+          if (fileUploadControl.files.length > 0) {
+            file = fileUploadControl.files[0];
+            name = file.name;
+          }
+        } else if( typeof( value ) == 'string' ){
+          file = { base64: value };
+          name = self._currentUser.id +"_"+ Date.now();
+        }
+
+        data = new Parse.File(name, file);
+      }
+
+      user.set(key, data);
+      user.save(null, {
+        success: function(user) {
+          if( key == 'profileFile' ){
+            self._currentUser.profileFileUrl = user.get('profileFile').url();
+          } else {
+            self._currentUser[key] = data;
+          }
+          callback( null, user );
         },
-        error: function(object, error) {
-          callback( error, null );
+        error: function(user, error) {
+          callback(error, null);
         }
       });
     };
 
-    Stalk.prototype.searchUsersByPage = function(data, callback){
+    /**
+     * 검색어를 이용해서 유저 정보를 검색한다.
+     * @name searchUsers
+     * @memberof Stalk
+     * @function
+     * @param {string} keyword - 검색어 
+     * @param {callback} callback - 사용자 검색후 호출되는 callback
+     * @example
+     * stalk.searchUsers( 'james', function( err, users ){
+     *   console.log( users );
+     * });
+     */
+    Stalk.prototype.searchUsers = function(keyword, callback){
+
+      var data = {
+        keyword: keyword,
+        pageNumber: 1
+      };
+
       var limit = data.pageSize || DEFAULT_PAGE_SIZE;
       var skip = ((data.pageNumber || 1) - 1) * limit;
 
@@ -168,6 +273,48 @@
       }      
     };
 
+    /**
+     * 현재 접속 중인 사용자의 follow list를 가져온다.
+     * @name loadFollows
+     * @memberof Stalk
+     * @function
+     * @param {callback} callback - follow 를 조회 후에 호출되는 callback
+     * @example
+     * stalk.loadFollows(function( err, follows ){
+     *   console.log( follows );
+     * });
+     */
+    Stalk.prototype.loadFollows = function(callback){
+      var currentUser = Parse.User.current();
+      var Follows = Parse.Object.extend('Follows');
+
+      var query = new Parse.Query(Follows)
+        .equalTo('userFrom', currentUser)
+        .include('userTo')
+        .ascending('nickName');
+
+      query.find({
+        success:function(results) {
+          callback( null, results.map(ParseUtil.fromFollowToJSON) )
+        },
+        error: function(object, error) {
+          callback( error, null );
+        }
+      });
+    };
+
+    /**
+     * 현재 접속 중인 사용자의 follow 목록에 선택된 user를 추가한다.
+     * @name createFollow
+     * @memberof Stalk
+     * @function
+     * @param {string} id - user's id
+     * @param {callback} callback - follow 생성 후에 호출되는 함수
+     * @example
+     * stalk.createFollow(userId, function( err, result ){
+     *   console.log( result );
+     * });
+     */
     Stalk.prototype.createFollow = function(id, callback){
       Parse.Cloud.run('follows-create', {id:id}, {
         success:function(result) {
@@ -179,6 +326,18 @@
       });
     };
 
+    /**
+     * 현재 접속 중인 사용자의 follow 목록에서 선택된 user를 제거한다.
+     * @name removeFollow
+     * @memberof Stalk
+     * @function
+     * @param {string} id - user's id
+     * @param {callback} callback - follow 삭제 후에 호출되는 함수
+     * @example
+     * stalk.removeFollow(userId, function( err, result ){
+     *   console.log( result );
+     * });
+     */
     Stalk.prototype.removeFollow = function(id, callback){
       Parse.Cloud.run('follows-remove', {id:id}, {
         success:function(result) {
@@ -190,31 +349,62 @@
       });      
     };
 
-    Stalk.prototype.openChat = function(data, callback){
+    /**
+     * 채팅을 위한 채널에 접속한다. ( 로그인이 필요한 채널 )
+     * @name openChannel
+     * @memberof Stalk
+     * @function
+     * @param {string} channelId - channelId
+     * @param {array} users - 채널에 포함될 사용자의 list
+     * @param {callback} callback - channel 오픈 후에 호출되는 함수
+     * @example
+     * stalk.openChannel(channelId, ['qW2hcf','r3vFdQ'], function( err, channel ){
+     *   console.log( channel );
+     * });
+     */
+    Stalk.prototype.openChannel = function(channelId, users, callback){
       var self = this;
 
-      if( data.id && self.chats[data.id] ){
-        callback( null, self.chats[data.id] );
-        return;
+      if( channelId ){
+        self._getChannelById( channelId, function( err, channel ){
+          if( !err && channel && channel.channelId ){
+            self._currentChannel = channel;
+            callback( null, channel );
+          } else {
+            self._createChat(users, callback);
+          }
+        });     
+      } else {
+        self._createChat(users, callback);
       }
-
-      self.createChat(data.users, callback);
     };
 
-    Stalk.prototype.createChat = function(users, callback){
+    Stalk.prototype._createChat = function(users, callback){
 
       var self = this;
       var ids = [];
-      users.forEach( function(user) {
-         ids.push(user.id);
-      });
+
+      if( !users || users.size == 0 ){
+        callback( {'message':'Invalid users'}, null );
+        return;
+      }
+
+      if( typeof( users[0] ) == 'object' ){
+        users.forEach( function(user) {
+           ids.push(user.id);
+        });
+      } else if( typeof( users[0] ) == 'string' ){
+        ids = users;
+      }
 
       Parse.Cloud.run('chats-create', { ids: ids }, {
         success:function(result) {
 
-          self.getChatById( result.id, function( err, chat ){
-            callback( null, chat );
+          self._getChatById( result.id, function( err, channel ){
+            self._currentChannel = channel;
+            callback( null, channel );
           });
+
         },
         error: function(object, error) {
           callback( error, null );
@@ -222,13 +412,8 @@
       });
     };
 
-    Stalk.prototype.getChatById = function(chatId, callback){
+    Stalk.prototype._getChatById = function(chatId, callback){
       var self = this;
-
-      if( self.chats[chatId] ){
-        callback( null, self.chats[chatId] );
-        return;
-      }
 
       var Chats = Parse.Object.extend('Chats');
 
@@ -237,9 +422,9 @@
       .get(chatId, {
         success:function(chat) {
 
-          var newChat = new Chat(self, ParseUtil.fromChatToJSON(chat) );
-          self.chats[newChat.id] = newChat;
-          callback( null, newChat  );
+          var newChannel = new Channel(self, ParseUtil.fromChatToJSON(chat) );
+          self._channels[newChannel.channelId] = newChannel;
+          callback( null, newChannel  );
         },
         error: function(object, error) {
           callback( error, null );
@@ -247,7 +432,41 @@
       });
     };
 
-    Stalk.prototype.loadChats = function(callback){
+    Stalk.prototype._getChannelById = function(channelId, callback){
+      var self = this;
+
+      var Channels = Parse.Object.extend('Channels');
+
+      if( self._channels[channelId] ){
+        callback( null, self._channels[channelId] );
+        return;
+      }
+
+      var query = new Parse.Query(Channels)
+      .get(channelId, {
+        success:function(channel) {
+          var newChannel = new Channel(self, ParseUtil.fromChannelToJSON(channel) );
+          self._channels[newChannel.channelId] = newChannel;
+          callback( null, newChannel  );
+        },
+        error: function(object, error) {
+          callback( error, null );
+        }
+      });
+    };
+
+    /**
+     * 현재 사용자의 Channels List를 조회한다.
+     * @name loadChannels
+     * @memberof Stalk
+     * @function
+     * @param {callback} callback - channel 조회 후에 호출되는 함수
+     * @example
+     * stalk.loadChannels(function( err, channels ){
+     *   console.log( channels );
+     * });
+     */
+    Stalk.prototype.loadChannels = function(callback){
       var currentUser = Parse.User.current();
 
       var self = this;
@@ -260,8 +479,8 @@
 
       query.find({
         success:function(lists) {
-          var chats = lists.map( ParseUtil.fromChatToJSON );
-          callback( null, chats );
+          var results = lists.map( ParseUtil.fromChatToJSON );
+          callback( null, results );
         },
         error: function(object, error) {
           callback( error, null );
@@ -269,7 +488,7 @@
       }); 
     };
 
-    var Chat = function(stalk, data){
+    var Channel = function(stalk, data){
       var self = this;
       self._stalk = stalk;
 
@@ -281,7 +500,7 @@
       self.uid = data.uid;
       self.users = data.users;
 
-      self.currentUser;
+      self._currentUser = stalk._currentUser;
 
       // channel connection;
       self._socket;
@@ -291,22 +510,21 @@
       return self;
     };
 
-    Chat.prototype._getSocket = function(callback){
+    Channel.prototype._getSocket = function(callback){
       var self = this;
-      self.currentUser = Parse.User.current();
 
       if( self._socket && self._socket.connected ){
         if( callback ) callback(self._socket);
       } else {
         self._getChannelNode( function(err, node){
           if( !err ){
-            self.connectChannel(node, callback);
+            self._connectChannel(node, callback);
           }
         });
       }
     };
 
-    Chat.prototype._getChannelNode = function(callback){
+    Channel.prototype._getChannelNode = function(callback){
       var self = this;
       this._stalk.ajax( '/node/'+self.appId+'/'+encodeURIComponent(self.channelId) , 'GET', {}, function(err, data){
         if( err ){
@@ -324,9 +542,9 @@
       }); 
     };
 
-    Chat.prototype.connectChannel = function(node, callback){
+    Channel.prototype._connectChannel = function(node, callback){
       var self = this;
-      var userId = self.currentUser ? self.currentUser.id : "someone";
+      var userId = self._currentUser ? self._currentUser.id : "someone";
 
       var self = this;
       var query =
@@ -352,7 +570,7 @@
         if( self.onMessageCallback ){
 
           if( typeof(data) == 'object' && data.user ) {
-            if( data.user._id == self.currentUser.id ){
+            if( data.user._id == self._currentUser.id ){
               data.sent = true;
             }
           }
@@ -363,11 +581,23 @@
     };
 
     var messageTimeSort = function(a,b){
-      // created data
-      return a.createdAt > b.createdAt;
+      return (b.createdAt < a.createdAt) ? 1 : (b.createdAt > a.createdAt) ? -1 : 0;
     };
 
-    Chat.prototype.loadMessages = function(callback, datetime){
+
+    /**
+     * 현재 사용자의 Channels List를 조회한다.
+     * @name loadMessages
+     * @memberof Channel
+     * @function
+     * @param {callback} callback - channel 조회 후에 호출되는 함수
+     * @param {datetime} [datetime] - channel 조회 후에 호출되는 함수
+     * @example
+     * channel.loadMessages(function( err, channels ){
+     *   console.log( channels );
+     * });
+     */
+    Channel.prototype.loadMessages = function(callback, datetime){
 
       var self = this;
       var Messages = Parse.Object.extend('Messages');
@@ -389,7 +619,6 @@
         .limit(MESSAGE_SIZE)
         .find({
           success:function(lists) {
-
             var messages = lists.map( ParseUtil.fromMessageToJSON );
             callback( null, messages.sort(messageTimeSort) );
           },
@@ -399,15 +628,24 @@
         });
     }; 
 
-    Chat.prototype.sendText = function(message){
+    /**
+     * 현재 활성화된 채널에 Text 메세지를 전송한다.
+     * @name sendText
+     * @memberof Channel
+     * @function
+     * @param {string} message - 전송할 Text
+     * @example
+     * channel.sendText(message);
+     */
+    Channel.prototype.sendText = function(message){
       var self = this;
 
-      var currentUser = Parse.User.current();
+      var currentUser = self._currentUser;
 
       var data = { 
         text: message,
         user: { _id: currentUser.id, name: currentUser.username, avatar: currentUser.profileFileUrl },
-        _id: 'temp-id-' + self.channel + Math.round(Math.random() * 1000000)
+        _id: 'temp-id-' + self.channel +"_"+Date.now()
       };
 
       self._getSocket( function( socket ){
@@ -415,29 +653,99 @@
       });
     };
 
-    Chat.prototype.onMessage = function(callback){
+    Channel.prototype.onMessage = function(callback){
       this.onMessageCallback = callback;
     };
 
-    Chat.prototype.sendImage = function(message){
+    /**
+     * 현재 활성화된 채널에 이미지url을 전송한다.
+     * @name sendImageUrl
+     * @memberof Channel
+     * @function
+     * @param {string} message - 전송할 image의 url
+     * @example
+     * channel.sendImageUrl(url);
+     */
+    Channel.prototype.sendImageUrl = function(imageUrl){
       var self = this;
-      var data = { image: message,
-        createdAt: Date.now(),
-        _id: 'temp-id-' + self.channel + Math.round(Math.random() * 1000000)
+
+      var currentUser = self._currentUser;
+
+      var data = {
+        image: imageUrl,
+        user: { _id: currentUser.id, name: currentUser.username, avatar: currentUser.profileFileUrl },
+        _id: 'temp-id-' + self.channel +"_"+ Date.now()
       }
+
+      self._getSocket( function( socket ){
+        socket.emit('send', {NM: 'message' , DT: data});
+      });
+    };
+
+    /**
+     * 현재 활성화된 채널에 파일을 전송한다.
+     * @name sendImageFile
+     * @memberof Channel
+     * @function
+     * @param {object} input - 전송할 image의 FileObject or base64
+     * @example
+     * channel.sendImageFile(document.getElementById("file");
+     */
+    Channel.prototype.sendImageFile = function(inputFile, callback){
+      var self = this;
+
+      var file = "";
+      var name = "";
+
+      if( typeof( inputFile ) == 'object' ){
+        var fileUploadControl = inputFile;
+        if (fileUploadControl.files.length > 0) {
+          file = fileUploadControl.files[0];
+          name = self.channelId +"_"+ file.name;
+        }
+      } else if( typeof( inputFile ) == 'string' ){
+        file = { base64: inputFile };
+        name = self.channelId +"_"+ Date.now();
+      }
+
+      if( !file ){
+        callback( "Invaild File", null );
+        return;
+      }
+
+      var parseFile = new Parse.File(name, file);
+      var Channels = Parse.Object.extend('Channels');
+      var UploadFiles = Parse.Object.extend('UploadFiles');
+
+      var user = new Parse.User();
+      user.id = Parse.User.current().id;
+
+      var uploadFiles = new UploadFiles();
+      uploadFiles.set("user",     user    );
+      uploadFiles.set("file",  parseFile  );
+
+      uploadFiles.save().then(function() {
+
+        var uploadedUrl = parseFile.url();
+        inputFile.value = '';        
+
+        self.sendImageUrl(uploadedUrl);
+        if( callback ) callback( null, uploadedUrl );
+      }, function(error) {
+        if( callback ) callback(error, null);
+      });
     };
 
     var ParseUtil = {};
 
-    ParseUtil.fromUserToJSON = function(user){
-
+    ParseUtil.fromUserToJSON = function(user, size){
       var username = user.get('username');
 
       var profileFileUrl = "";
       if( user && user.get('profileFile') != null && user.get('profileFile') != undefined ){
         profileFileUrl = user.get('profileFile').url();
       } else {
-        profileFileUrl = Util.getDefaultProfile( username ); 
+        profileFileUrl = Util.getDefaultProfile( username, size); 
       }
 
       return {
@@ -447,7 +755,7 @@
         nickName: user.get('nickName'),
         profileFileUrl: profileFileUrl,
         statusMessage: user.get('statusMessage'),
-      };  
+      }; 
     };
 
     ParseUtil.fromFollowToJSON = function(object){
@@ -480,29 +788,93 @@
         return null;
       }
 
-      var channel = object.get("channel");
-      var users = channel.get("users");
-      var names = [];
+      var channel;
+      var users;
+      var name;
+      var names;
+      var image;
 
-      var currentUser = Parse.User.current();
-      users.reduceRight(function(acc, user, index, object) {
-        if (user.id === currentUser.id) {
-          object.splice(index, 1);
-        } else {
+      try {
 
-          object[index] = ParseUtil.fromUserToJSON(user);
-          names.push(user.get('nickName'));
-        }
-      }, []);
+        channel = object.get("channel");
+        users = channel.get("users");
+        names = [];
 
-      var name = names.join(", ");
-      var image = Util.getDefaultProfile( name );
+        var currentUser = Parse.User.current();
+        users.reduceRight(function(acc, user, index, object) {
+
+          if (user.id === currentUser.id) {
+            object.splice(index, 1);
+          } else {
+            object[index] = ParseUtil.fromUserToJSON(user);
+            names.push(user.get('nickName'));
+          }
+        }, []);
+
+        name = names.join(", ");
+        image = Util.getDefaultProfile( name );
+
+      } catch (err){
+        //debug("ajax error: " + err);
+        console.error("ajax error: " + err);
+        return {};
+      }
 
       return {
-        id: object.id,
+        id: channel.id,
         channelId: channel.id,
         createdAt: Util.dateToString(object.get("createdAt")),
         updatedAt: Util.dateToString(object.get("updatedAt")),
+        name: names.join(", "),
+        uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
+        users: users,
+        image: image
+      };
+    };
+
+   ParseUtil.fromChannelToJSON = function(object){
+
+      if( !object ){
+        return null;
+      }
+
+      var channel;
+      var users;
+      var name;
+      var names;
+      var image;
+
+      try {
+
+        channel = object;
+        users = channel.get("users");
+        names = [];
+
+        var currentUser = Parse.User.current();
+        users.reduceRight(function(acc, user, index, object) {
+
+          if (user.id === currentUser.id) {
+            object.splice(index, 1);
+          } else {
+            object[index] = ParseUtil.fromUserToJSON(user);
+            names.push(user.get('nickName'));
+          }
+        }, []);
+
+        name = names.join(", ");
+        image = Util.getDefaultProfile( name );
+
+      } catch (err){
+        //debug("ajax error: " + err);
+        console.error("ajax error: " + err);
+        return {};
+      }
+
+      return {
+        id: channel.id,
+        channelId: channel.id,
+        createdAt: Util.dateToString(channel.get("createdAt")),
+        updatedAt: Util.dateToString(channel.get("updatedAt")),
         name: names.join(", "),
         uid: users.length == 1 ? users[0].id : null, // uid 이 Null 이면, Group Chat !
         users: users,
@@ -535,8 +907,7 @@
 
     Util.getDefaultProfile = function(str, size){
       var result = "https://cdn-enterprise.discourse.org/ionicframework/user_avatar/forum.ionicframework.com/dtrujo/90/12150_1.png";
-
-      if (str.search(/[^a-zA-Z]+/) === -1) {
+      if (str.search(/[^a-zA-Z0-9]+/) === -1) {
 
         var firstChar = str.substring(0,1);
         var rgb = Util.getRGBFromStr(str);

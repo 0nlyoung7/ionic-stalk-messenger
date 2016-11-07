@@ -27,15 +27,10 @@ export class SearchUserPage {
     // set val to the value of the searchbar
     let val = ev.target.value;
 
-    var data = {
-      keyword: val,
-      pageNumber: 1
-    };
-
     if( this.timeout )clearTimeout(this.timeout);
     this.timeout = setTimeout(function(){
 
-      self.ss.stalk.searchUsersByPage( data, function( err, users ){
+      self.ss.stalk.searchUsers( val, function( err, users ){
         self.users = users;
       });
 
@@ -45,9 +40,9 @@ export class SearchUserPage {
   addFollow = () => {
     var self = this;
 
-    for( var key in this.checkedList ){
-      if( this.checkedList[key] ){
-        this.ss.stalk.createFollow(key, function(err, result){
+    for( var userId in this.checkedList ){
+      if( this.checkedList[userId] ){
+        this.ss.stalk.createFollow(userId, function(err, result){
           if( err ){
             alert(err.message);
             return;
