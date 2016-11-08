@@ -5,6 +5,7 @@ import { NavController, App } from 'ionic-angular';
 import {SharedService} from '../../app/sharedService';
 
 import { SettingFormPage } from './settingForm';
+import { SignInPage } from '../account/signin';
 
 
 @Component({
@@ -36,5 +37,11 @@ export class SettingPage {
     this.ss.stalk.updateUser( "profileFile", self.fileInput.nativeElement, function(err, user){
       console.log( user );
     });
+  }
+
+  public logOut = () => {
+    var self = this;
+    this.ss.stalk.logOut();
+    this.app.getRootNav().popToRoot();
   }
 }

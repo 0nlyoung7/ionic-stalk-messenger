@@ -10,8 +10,8 @@ import {SharedService} from '../../app/sharedService';
 })
 export class SignUpPage {
 
-  userId: any;
-  password: any;
+  username: string;
+  password: string;
 
   // Alert 을 위한 alertCtrl 을 추가함
   constructor(public navCtrl: NavController, public ss: SharedService, public alertCtrl: AlertController) {
@@ -19,7 +19,7 @@ export class SignUpPage {
 
   public signUp(){
     var self = this;
-    this.ss.stalk.signUp(this.userId, this.password, function(err, user){
+    this.ss.stalk.signUp(this.username, this.password, function(err, user){
 
       var title = 'Success';
       var subTitle = 'SignUp Success.';

@@ -16,9 +16,11 @@ export class SearchUserPage {
   timeout:any;
   checkedList: any = {};
   callback: any;
+  btnNm: string;
 
   constructor(public navCtrl: NavController, public ss: SharedService, private app:App, private navParams: NavParams) {
     this.callback = navParams.get('callback');
+    this.btnNm = navParams.get('btnNm') ? navParams.get('btnNm') : "OK";
   }
 
   getItems(ev: any) {
@@ -37,25 +39,19 @@ export class SearchUserPage {
     }, 200 );
   }
 
-  addFollow = () => {
+  confirm = () => {
     var self = this;
 
+    var checkUserIds = [];
     for( var userId in this.checkedList ){
       if( this.checkedList[userId] ){
-        this.ss.stalk.createFollow(userId, function(err, result){
-          if( err ){
-            alert(err.message);
-            return;
-          }
-
-          if( self.callback ){
-            self.callback();
-          }
-          self.navCtrl.pop();
-        });
+        checkUserIds.push( userId );
       }
-
-      break;
     }
+
+    if( self.callback ){
+      self.callback(checkUserIds);
+    }
+    self.navCtrl.pop();
   }
 }

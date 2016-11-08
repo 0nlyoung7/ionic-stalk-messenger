@@ -16,16 +16,6 @@
         <h2>{{user.nickName}}</h2>
         <p>{{user.statusMessage}}</p>
       </ion-item>
-      <ion-item-options side="left">
-        <button ion-button color="primary">
-          <ion-icon name="text"></ion-icon>
-          Text
-        </button>
-        <button ion-button color="secondary">
-          <ion-icon name="call"></ion-icon>
-          Call
-        </button>
-      </ion-item-options>
       <ion-item-options side="right">
         <button ion-button color="danger" (click)="removeFollow(user, inx)">
           <ion-icon name="remove-circle"></ion-icon>

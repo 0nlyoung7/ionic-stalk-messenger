@@ -12,8 +12,8 @@ import {SharedService} from '../../app/sharedService';
 })
 export class SignInPage {
 
-  userId: any;
-  password: any;
+  username: string;
+  password: string;
 
   private pushPage: any;
 
@@ -23,7 +23,7 @@ export class SignInPage {
 
   public signIn(){
     var self = this;
-    this.ss.stalk.logIn(this.userId, this.password, function(err, user){
+    this.ss.stalk.logIn(this.username, this.password, function(err, user){
       if( err ){
         var message = err.message;
         let alert = self.alertCtrl.create({

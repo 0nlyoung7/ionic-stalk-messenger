@@ -6,24 +6,15 @@
 
 <ion-content padding>
   <ion-list>
-
     <ion-item>
-      <ion-label stacked>UserId</ion-label>
-      <ion-input type="text" [(ngModel)]="userId" value=""></ion-input>
+      <ion-label stacked>Username</ion-label>
+      <ion-input type="text" [(ngModel)]="username" value=""></ion-input>
     </ion-item>
-
     <ion-item>
       <ion-label stacked>Password</ion-label>
       <ion-input type="password" [(ngModel)]="password"  ></ion-input>
     </ion-item>
-
-    <ion-item>
-      <ion-label stacked>Confirm Password</ion-label>
-      <ion-input type="password"></ion-input>
-    </ion-item>
-
   </ion-list>
-
   <div padding>
     <button ion-button color="primary" block (click)="signUp()">Sign Up</button>
   </div>

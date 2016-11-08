@@ -23,19 +23,19 @@ export class ChatPage {
     let channelId = navParams.get('channelId');
 
     var self = this;
-
-    ss.stalk.openChannel( channelId, users, function( err, channel ){
+    
+    ss.stalk.openChannel( users, channelId, function( err, channel ){
 
       self.channel = channel;
 
       channel.loadMessages( function(err, messages ){
         self.messages = messages;
-        self.scrollToBottom();
+        self.scrollToBottom(messages.length * 20);
       });
 
       channel.onMessage( function(data){
         self.messages.push( data );
-        self.scrollToBottom();
+        self.scrollToBottom(100);
       });
     });
   }
@@ -59,14 +59,13 @@ export class ChatPage {
     });
   };
 
-  scrollToBottom(){
+  scrollToBottom(delay){
     var self = this;
     setTimeout(function(){
       try {
-        self.content.scrollToBottom(100);
+        self.content.scrollToBottom(delay);
       } catch ( err ){
-        console.log( err );
       }
-    }, 100);
+    }, delay);
   }
 }

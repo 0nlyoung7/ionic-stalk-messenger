@@ -9,6 +9,7 @@
 <ion-content padding>
   <ol class="messages">
     <li *ngFor="let message of messages;" [ngClass]=" message.sent ? 'S':'R' ">
+      <img *ngIf="!message.sent" [src]="message.user.avatar" class="avatar"/>
       <div *ngIf=" message.image ">
         <span>
           <img [src]="message.image"/>
@@ -17,7 +18,8 @@
       <div *ngIf=" message.text ">
         <span>{{message.text}}</span>
       </div>
-	  </li>
+      <span class="time">{{message.createdAt| date:"hh:mm:ss" }}</span>
+    </li>
   </ol>
 </ion-content>
 

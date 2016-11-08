@@ -22,5 +22,8 @@
     </ion-item>
 
   </ion-list>
+  <div padding>
+    <button ion-button color="primary" block (click)="logOut()">logOut</button>
+  </div>
   <input type="file" #fileInput id="file" style="display:none" (change)="onFileChange($event, fileInput.value)" />
 </ion-content>

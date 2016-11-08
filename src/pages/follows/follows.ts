@@ -26,18 +26,26 @@ export class FollowsPage {
     this.app.getRootNav().push(ChatPage, {users:[user]});
   }
 
-  public openSearchUser = () =>{
-    this.app.getRootNav().push(SearchUserPage, {callback:this.refreshFollow});
+  public openSearchUser = () => {
+    this.app.getRootNav().push(SearchUserPage, {callback:this.addFollow, btnNm:"Add"});
   }
 
-  public refreshFollow = () => {
+  public addFollow = (userIds) => {
     var self = this;
-    this.ss.stalk.loadFollows( function(err, users){
-      self.users = users;
-    });    
-  }
 
-  removeFollow(user, inx){
+    this.ss.stalk.createFollow(userIds, function(err, result){
+      if( err ){
+        alert(err.message);
+        return;
+      }
+
+      self.ss.stalk.loadFollows( function(err, results){
+        self.users = results;
+      });
+    });
+  };
+
+  removeFollow = (user, inx) => {
     var self = this;
     this.ss.stalk.removeFollow(user.id,function(err, result){
       if( err ){
