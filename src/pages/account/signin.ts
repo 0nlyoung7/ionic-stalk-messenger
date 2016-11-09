@@ -15,13 +15,13 @@ export class SignInPage {
   username: string;
   password: string;
 
-  private pushPage: any;
+  pushPage: any;
 
   constructor(public navCtrl: NavController, public ss: SharedService, public alertCtrl: AlertController) {
     this.pushPage = SignUpPage;
   }
 
-  public signIn(){
+  public signIn =()=> {
     var self = this;
     this.ss.stalk.logIn(this.username, this.password, function(err, user){
       if( err ){

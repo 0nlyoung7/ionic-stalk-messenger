@@ -5,7 +5,6 @@ import { NavController, App } from 'ionic-angular';
 import {SharedService} from '../../app/sharedService';
 
 import { SettingFormPage } from './settingForm';
-import { SignInPage } from '../account/signin';
 
 
 @Component({

@@ -1,106 +1,104 @@
 page-chat {
-
-}
-
-.messages {
-	margin:0;
-	padding:0;
-	list-style-type:none;
-}
-
-.messages li {
-	display:block;
-	float:left;
-	clear:both;
-	max-width:85%;
-	margin:0 0 0.725rem 0;
-	padding:0;
-}
-
-.messages span {
-	border-radius:.75rem;
-	background:#e6e5eb;
-	color:#383641;
-	padding:.6875rem;
-	margin:0;
-	display:block;
-}
-
-.messages div.small {
-	padding:.125rem;
-	color:#5ba0d0;
-	margin:0;
-	font-size:1rem;
-}
-
-.messages img {
-	display:block;
-	border-radius:.75rem;
-}
-
-.messages li.R {
-	span {
-		float: left;
-		margin: 0 5px;
-		text-overflow: ellipsis;
-		overflow-x: hidden;
-		word-wrap: break-word;
+	.messages {
+		margin:0;
+		padding:0;
+		list-style-type:none;
 	}
 
-	span.time {
-		font-size: 12px;
-		line-height: 20px;
-		color: #B0BEC5;
-		background-color: transparent;
-	}
-
-	div {
-		float: left;
-	}
-
-	img {
-		float: left;
-		padding: 0px;
-		margin: 0px;
-		max-width: 200px;
-		min-height: 22px;
-		border-radius:.75rem;
+	.messages li {
 		display:block;
-	}
-
-	img.avatar {
-		display:inline;
-		width: 40px;
-		height: 40px;
-		border-radius: 20px;
-		float: left;
-	}
-}
-
-.messages li.S {
-	float:right;
-
-	span {
-		background:#158ffe;
-		color:#fff;
-	}
-
-	span.time {
-		font-size: 12px;
-		line-height: 20px;
-		color: #B0BEC5;
+		float:left;
 		clear:both;
-		background-color: transparent;
+		max-width:85%;
+		margin:0 0 0.725rem 0;
+		padding:0;
 	}
 
-	img {
+	.messages span {
+		border-radius:.75rem;
+		background:#e6e5eb;
+		color:#383641;
+		padding:.6875rem;
+		margin:0;
+		display:block;
+	}
+
+	.messages div.small {
+		padding:.125rem;
+		color:#5ba0d0;
+		margin:0;
+		font-size:1rem;
+	}
+
+	.messages img {
 		display:block;
 		border-radius:.75rem;
-		max-width: 200px;
-		min-height: 22px;
 	}
-}
 
-.bar-frosted {
-  background-color: #F7F7F7;
+	.messages li.R {
+		span {
+			float: left;
+			margin: 0 5px;
+			text-overflow: ellipsis;
+			overflow-x: hidden;
+			word-wrap: break-word;
+		}
+
+		span.time {
+			font-size: 12px;
+			line-height: 20px;
+			color: #B0BEC5;
+			background-color: transparent;
+		}
+
+		div {
+			float: left;
+		}
+
+		img {
+			float: left;
+			padding: 0px;
+			margin: 0px;
+			max-width: 200px;
+			min-height: 22px;
+			border-radius:.75rem;
+			display:block;
+		}
+
+		img.avatar {
+			display:inline;
+			width: 40px;
+			height: 40px;
+			border-radius: 20px;
+			float: left;
+		}
+	}
+
+	.messages li.S {
+		float:right;
+
+		span {
+			background:#158ffe;
+			color:#fff;
+		}
+
+		span.time {
+			font-size: 12px;
+			line-height: 20px;
+			color: #B0BEC5;
+			clear:both;
+			background-color: transparent;
+		}
+
+		img {
+			display:block;
+			border-radius:.75rem;
+			max-width: 200px;
+			min-height: 22px;
+		}
+	}
+
+	.bar-frosted {
+	  background-color: #F7F7F7;
+	}
 }
