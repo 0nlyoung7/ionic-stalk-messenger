@@ -1,21 +1,21 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      Chats
+      ChannelsPage
     </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content>
   <ion-list >
-    <ion-item-sliding *ngFor="let chat of chats; let inx = index">
-      <ion-item (click)="gotoChat(chat);">
+    <ion-item-sliding *ngFor="let channel of channels; let inx = index">
+      <ion-item (click)="gotoChat(channel);">
         <ion-avatar item-left>
-          <img src="{{chat.image}}">
+          <img src="{{channel.image}}">
         </ion-avatar>
-        <h2>{{chat.name}}</h2>
-        <p>{{chat.latestMessage}}</p>
-        <ion-note item-right>{{chat.updated}}</ion-note>
+        <h2>{{channel.name}}</h2>
+        <p>{{channel.latestMessage}}</p>
+        <ion-note item-right>{{channel.updated}}</ion-note>
       </ion-item>
       <ion-item-options side="left">
         <button ion-button color="primary">
@@ -28,7 +28,7 @@
         </button>
       </ion-item-options>
       <ion-item-options side="right">
-        <button ion-button color="danger" (click)="removeChat(chat, inx)">
+        <button ion-button color="danger" (click)="removeChannel(channel, inx)">
           <ion-icon name="exit"></ion-icon>
           Exit
         </button>

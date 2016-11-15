@@ -10,7 +10,7 @@ import { TabsPage } from '../pages/tabs/tabs';
 import { FollowsPage } from '../pages/follows/follows';
 import { SearchUserPage } from '../pages/follows/searchUser';
 
-import { ChatsPage } from '../pages/chats/chats';
+import { ChannelsPage } from '../pages/channels/channels';
 import { ChatPage } from '../pages/chat/chat';
 
 import { SettingPage } from '../pages/setting/setting';
@@ -18,6 +18,8 @@ import { SettingFormPage } from '../pages/setting/settingForm';
 
 //GlobalVariable
 import {SharedService} from './sharedService';
+
+import {NotificationService} from './notificationService';
 
 @NgModule({
   declarations: [
@@ -27,7 +29,7 @@ import {SharedService} from './sharedService';
     TabsPage,
     FollowsPage,
     SearchUserPage,
-    ChatsPage,
+    ChannelsPage,
     ChatPage,
     SettingPage,
     SettingFormPage
@@ -43,11 +45,11 @@ import {SharedService} from './sharedService';
     TabsPage,
     FollowsPage,
     SearchUserPage,
-    ChatsPage,
+    ChannelsPage,
     ChatPage,
     SettingPage,
     SettingFormPage
   ],
-  providers: [SharedService]
+  providers: [SharedService, NotificationService]
 })
 export class AppModule {}
