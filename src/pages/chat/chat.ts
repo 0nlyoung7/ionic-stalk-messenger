@@ -68,4 +68,10 @@ export class ChatPage {
       }
     }, delay);
   }
+
+  onScrollUp(infiniteHeader){
+    var self = this;
+    // console.log( ' Implement this ' );
+    infiniteHeader.complete();
+  }
 }

@@ -19,6 +19,8 @@ import { SettingFormPage } from '../pages/setting/settingForm';
 //GlobalVariable
 import {SharedService} from './sharedService';
 
+import {InfiniteHeader} from '../directives/infiniteHeader';
+
 import {NotificationService} from './notificationService';
 
 @NgModule({
@@ -32,7 +34,8 @@ import {NotificationService} from './notificationService';
     ChannelsPage,
     ChatPage,
     SettingPage,
-    SettingFormPage
+    SettingFormPage,
+    InfiniteHeader
   ],
   imports: [
     IonicModule.forRoot(MyApp)

@@ -6,9 +6,9 @@
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
-  <ol class="messages">
-    <li *ngFor="let message of messages;" [ngClass]=" message.sent ? 'S':'R' ">
+<ion-content padding infinite-header (scrolledUp)="onScrollUp($event)">
+  <ion-list class="messages">
+    <li *ngFor="let message of messages;" [ngClass]=" message.sent ? 'S':'R' " >
       <img *ngIf="!message.sent" [src]="message.user.avatar" class="avatar"/>
       <div *ngIf=" message.image ">
         <span>
@@ -20,7 +20,7 @@
       </div>
       <span class="time">{{message.created}}</span>
     </li>
-  </ol>
+  </ion-list>
 </ion-content>
 
 <ion-footer class="bar-frosted" >
