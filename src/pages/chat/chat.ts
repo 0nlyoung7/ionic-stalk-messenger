@@ -14,6 +14,8 @@ export class ChatPage {
   messages:any[] = [];
   channel:any;
 
+  lastLoaded:number;
+
   @ViewChild(Content) content: Content;
   @ViewChild('fileInput') fileInput:ElementRef;
 
@@ -31,6 +33,10 @@ export class ChatPage {
       channel.loadMessages( function(err, messages ){
         self.messages = messages;
         self.scrollToBottom(messages.length * 20);
+
+        if( messages.length > 0 ){
+          self.lastLoaded = messages[0].createdAt;
+        }
       });
 
       channel.onMessage( function(data){
@@ -71,7 +77,17 @@ export class ChatPage {
 
   onScrollUp(infiniteHeader){
     var self = this;
-    // console.log( ' Implement this ' );
-    infiniteHeader.complete();
+
+    self.channel.loadMessages( function(err, messages){
+      if( messages.length > 0 ){
+        self.messages = messages.concat( self.messages );
+      }
+
+      if( messages.length == 50 ){
+        infiniteHeader.complete();
+      } else {
+        infiniteHeader.enable(false);
+      }
+    }, self.lastLoaded );
   }
 }

@@ -18,9 +18,12 @@ export class InfiniteHeader implements OnInit{
   _thrPc: number = 0.15;
   _lastCheck: number;
 
+  _lastPosY: number;
+
+  _scrollDistance: number;
+
   state: string;
   _init: boolean;
-  ionInfinite: EventEmitter<InfiniteHeader>;
 
   @Output() scrolledUp: EventEmitter<InfiniteHeader>;
 
@@ -28,10 +31,13 @@ export class InfiniteHeader implements OnInit{
     this._elementRef = element.nativeElement;
     this._zone = _zone;
     this._content = content;
+
     this.scrolledUp = new EventEmitter();
   }
 
   ngOnInit() {
+    this._lastPosY = this._content.getContentDimensions().scrollTop;
+
     this._init = true;
     this._setListeners(this.state !== STATE_DISABLED);
   }
@@ -39,15 +45,16 @@ export class InfiniteHeader implements OnInit{
   private _onScroll = function () {
 
     var _this = this;
+    var d = this._content.getContentDimensions();
+
     if (this.state === STATE_LOADING || this.state === STATE_DISABLED) {
       return 1;
     }
     var now = Date.now();
-    if (this._lastCheck + 100 > now) {
+    if (this._lastCheck + 30 > now) {
       return 2;
     }
     this._lastCheck = now;
-    var d = this._content.getContentDimensions();
 
     var reloadY = d.contentHeight;
     if (this._thrPc) {
@@ -57,19 +64,28 @@ export class InfiniteHeader implements OnInit{
       reloadY = this._thrPx;
     }
 
+    this._scrollDistance = d.scrollTop - this._lastPosY;
+
     var distanceFromInfinite = (d.scrollTop) - reloadY;
 
     if (distanceFromInfinite < 0) {
       this._zone.run(function () {
         if (_this.state !== STATE_LOADING && _this.state !== STATE_DISABLED) {
-          _this.state = STATE_LOADING;
-          if( _this.scrolledUp ){
-            _this.scrolledUp.emit(_this);
+
+          if( _this._lastPosY > 0 ){
+
+            if( _this._scrollDistance < 0 ) {
+              _this.state = STATE_LOADING;
+              _this.scrolledUp.emit(_this);
+            }
           }
+
         }
       });
+      this._lastPosY = d.scrollTop;
       return 5;
     }
+    this._lastPosY = d.scrollTop;
     return 6;
   };
 
@@ -92,7 +108,9 @@ export class InfiniteHeader implements OnInit{
 
   public enable = function (shouldEnable) {
     this.state = (shouldEnable ? STATE_ENABLED : STATE_DISABLED);
-    this._setListeners(shouldEnable);
+    if( shouldEnable ){
+      this._setListeners(shouldEnable);
+    }
   };
 
   public complete = function () {
