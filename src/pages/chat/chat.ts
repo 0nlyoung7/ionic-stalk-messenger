@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, Renderer } from '@angular/core';
 
-import { NavController, NavParams, Content, MenuController } from 'ionic-angular';
+import { NavController, App, NavParams, Content, MenuController } from 'ionic-angular';
 
 import {SharedService} from '../../app/sharedService';
 
@@ -20,7 +20,7 @@ export class ChatPage {
   @ViewChild(Content) content: Content;
   @ViewChild('fileInput') fileInput:ElementRef;
 
-  constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private navParams: NavParams, public menuCtrl: MenuController) {
+  constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private navParams: NavParams, public menuCtrl: MenuController, private app:App) {
 
     this.users = navParams.get('users');
     let channelId = navParams.get('channelId');
@@ -94,5 +94,9 @@ export class ChatPage {
 
   public openMenu(){
     this.menuCtrl.toggle();
+  }
+
+  public goBack(){
+    this.app.getRootNav().pop();
   }
 }

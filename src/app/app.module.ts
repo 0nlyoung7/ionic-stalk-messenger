@@ -10,8 +10,10 @@ import { TabsPage } from '../pages/tabs/tabs';
 import { FollowsPage } from '../pages/follows/follows';
 import { SearchUserPage } from '../pages/follows/searchUser';
 
+
 import { ChannelsPage } from '../pages/channels/channels';
 import { ChatPage } from '../pages/chat/chat';
+import { ChatMenuPage } from '../pages/chat/chatMenu';
 
 import { SettingPage } from '../pages/setting/setting';
 import { SettingFormPage } from '../pages/setting/settingForm';
@@ -35,7 +37,8 @@ import {NotificationService} from './notificationService';
     ChatPage,
     SettingPage,
     SettingFormPage,
-    InfiniteHeader
+    InfiniteHeader,
+    ChatMenuPage
   ],
   imports: [
     IonicModule.forRoot(MyApp)
@@ -51,7 +54,8 @@ import {NotificationService} from './notificationService';
     ChannelsPage,
     ChatPage,
     SettingPage,
-    SettingFormPage
+    SettingFormPage,
+    ChatMenuPage
   ],
   providers: [SharedService, NotificationService]
 })

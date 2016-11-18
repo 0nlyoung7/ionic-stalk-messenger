@@ -8,7 +8,7 @@ import {SharedService} from '../../app/sharedService';
 
 import {NotificationService} from '../../app/notificationService';
 
-import { ChatPage } from '../chat/chat';
+import { ChatMenuPage } from '../chat/chatMenu';
 
 @Component({
   selector: 'page-channels',
@@ -22,7 +22,7 @@ export class ChannelsPage {
   }
 
   public gotoChat = (channel) => {
-    this.app.getRootNav().push(ChatPage, {channelId:channel.channelId, users:channel.users});
+    this.app.getRootNav().push(ChatMenuPage, {channelId:channel.channelId, users:channel.users});
   }
 
   ionViewDidEnter() {

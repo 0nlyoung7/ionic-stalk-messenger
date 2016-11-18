@@ -4,7 +4,7 @@ import { NavController, App } from 'ionic-angular';
 
 import {SharedService} from '../../app/sharedService';
 
-import { ChatPage } from '../chat/chat';
+import { ChatMenuPage } from '../chat/chatMenu';
 import { SearchUserPage } from './searchUser';
 
 @Component({
@@ -23,7 +23,7 @@ export class FollowsPage {
   }
 
   public gotoChat = (user) => {
-    this.app.getRootNav().push(ChatPage, {users:[user]});
+    this.app.getRootNav().push(ChatMenuPage, {users:[user]});
   }
 
   public openSearchUser = () => {
