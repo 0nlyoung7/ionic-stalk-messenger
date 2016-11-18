@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, Renderer } from '@angular/core';
 
-import { NavController, NavParams, Content } from 'ionic-angular';
+import { NavController, NavParams, Content, MenuController } from 'ionic-angular';
 
 import {SharedService} from '../../app/sharedService';
 
@@ -13,20 +13,21 @@ export class ChatPage {
   inputMessage: any;
   messages:any[] = [];
   channel:any;
+  users:any[];
 
   lastLoaded:number;
 
   @ViewChild(Content) content: Content;
   @ViewChild('fileInput') fileInput:ElementRef;
 
-  constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private navParams: NavParams) {
+  constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private navParams: NavParams, public menuCtrl: MenuController) {
 
-    let users = navParams.get('users');
+    this.users = navParams.get('users');
     let channelId = navParams.get('channelId');
 
     var self = this;
     
-    ss.stalk.openChannel( users, channelId, function( err, channel ){
+    ss.stalk.openChannel( this.users, channelId, function( err, channel ){
 
       self.channel = channel;
 
@@ -89,5 +90,9 @@ export class ChatPage {
         infiniteHeader.enable(false);
       }
     }, self.lastLoaded );
+  }
+
+  public openMenu(){
+    this.menuCtrl.toggle();
   }
 }

@@ -3,10 +3,15 @@
     <ion-title>
       Chat
     </ion-title>
+    <ion-buttons end>
+      <button ion-button color="royal" icon-only (click)="openMenu();">
+        <ion-icon name='menu'></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
-<ion-content padding infinite-header (scrolledUp)="onScrollUp($event)">
+<ion-content #chatContent padding infinite-header (scrolledUp)="onScrollUp($event)">
   <ion-list class="messages">
     <li *ngFor="let message of messages;" [ngClass]=" message.sent ? 'S':'R' " >
       <img *ngIf="!message.sent" [src]="message.user.avatar" class="avatar"/>
@@ -22,7 +27,6 @@
     </li>
   </ion-list>
 </ion-content>
-
 <ion-footer class="bar-frosted" >
   <ion-item>
     <input type="file" #fileInput id="file" style="display:none" (change)="onFileChange($event, fileInput.value)" />
@@ -32,4 +36,29 @@
     <ion-input [(ngModel)]="inputMessage" placeholder="Start typing..."></ion-input>
     <button ion-button item-right color="primary" style="min-width:50px;" (click)="send()" >Send</button>
   </ion-item>
-</ion-footer> 
+</ion-footer>
+
+<ion-menu [content]="chatContent" side="right">
+  <ion-toolbar>
+    <ion-title>
+      Users
+    </ion-title>
+  </ion-toolbar>
+  <ion-list>
+    <ion-item *ngFor="let user of users; let inx = index">
+      <ion-avatar item-left>
+        <img src="{{user.avatar}}">
+      </ion-avatar>
+      <h2>{{user.nickName}}</h2>
+    </ion-item>
+  </ion-list>
+  <ion-footer>
+    <ion-toolbar>
+      <ion-buttons>
+        <button ion-button color="royal" icon-only >
+          <ion-icon name='exit'></ion-icon>
+        </button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
+</ion-menu>
