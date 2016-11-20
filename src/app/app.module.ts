@@ -9,7 +9,7 @@ import { TabsPage } from '../pages/tabs/tabs';
 
 import { FollowsPage } from '../pages/follows/follows';
 import { SearchUserPage } from '../pages/follows/searchUser';
-
+import { SearchFollowPage } from '../pages/follows/searchFollow';
 
 import { ChannelsPage } from '../pages/channels/channels';
 import { ChatPage } from '../pages/chat/chat';
@@ -33,6 +33,7 @@ import {NotificationService} from './notificationService';
     TabsPage,
     FollowsPage,
     SearchUserPage,
+    SearchFollowPage,
     ChannelsPage,
     ChatPage,
     SettingPage,
@@ -51,6 +52,7 @@ import {NotificationService} from './notificationService';
     TabsPage,
     FollowsPage,
     SearchUserPage,
+    SearchFollowPage,
     ChannelsPage,
     ChatPage,
     SettingPage,

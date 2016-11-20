@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Search Follows
+    </ion-title>
+    <ion-buttons end>
+      <button ion-button color="royal" (click)="confirm();">{{btnNm}}</button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-searchbar (ionInput)="getItems($event)"></ion-searchbar>
+  <ion-list >
+    <ion-item *ngFor="let follow of follows;">
+      <ion-checkbox color="primary" [disabled]="diabledList[follow.id]" checked="false" [(ngModel)]="checkedList[follow.id]"></ion-checkbox>
+      <ion-avatar item-left>
+        <img src="{{follow.avatar}}" />
+      </ion-avatar>
+      <ion-label>{{follow.nickName}}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

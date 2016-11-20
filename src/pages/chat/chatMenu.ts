@@ -6,7 +6,7 @@ import {SharedService} from '../../app/sharedService';
 
 import { ChatPage } from './chat'
 
-import { SearchUserPage } from '../follows/searchUser';
+import { SearchFollowPage } from '../follows/searchFollow';
 
 @Component({
   selector: 'page-chatMenu',
@@ -32,6 +32,6 @@ export class ChatMenuPage {
   };
 
   public openSearchUser = () => {
-    this.navCtrl.push(SearchUserPage, {callback:this.inviteUser, btnNm:"Invie", users:this.users});
+    this.navCtrl.push(SearchFollowPage, {callback:this.inviteUser, btnNm:"Invite", users:this.users});
   }
 }
