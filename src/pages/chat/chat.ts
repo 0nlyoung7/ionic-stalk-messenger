@@ -12,7 +12,7 @@ export class ChatPage {
 
   inputMessage: any;
   messages:any[] = [];
-  channel:any;
+  public channel:any;
   users:any[];
 
   lastLoaded:number;
@@ -93,7 +93,10 @@ export class ChatPage {
   }
 
   public openMenu(){
-    this.menuCtrl.toggle();
+    if( !this.menuCtrl.isEnabled() ){
+      this.menuCtrl.enable(true);
+    }
+    this.menuCtrl.open();
   }
 
   public goBack(){

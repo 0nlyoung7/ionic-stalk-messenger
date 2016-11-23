@@ -34,8 +34,6 @@ export class SearchFollowPage {
       }
     }
 
-    console.log( self.diabledList );
-
     ss.stalk.loadFollows( function( err, results ){
       self.follows = results;
     });
