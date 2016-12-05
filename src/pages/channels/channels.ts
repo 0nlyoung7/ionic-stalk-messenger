@@ -35,4 +35,8 @@ export class ChannelsPage {
       self.events.publish('message:unread', {});
     });
   }
+
+  public unreadCount(channelId): number {
+    return this.ss.getUnreadCount(channelId);
+  }
 }

@@ -7,15 +7,17 @@
 </ion-header>
 
 <ion-content>
-  <ion-list >
+  <ion-list class="list-avatar">
     <ion-item-sliding *ngFor="let channel of channels; let inx = index">
       <ion-item (click)="gotoChat(channel);">
         <ion-avatar item-left>
           <img src="{{channel.image}}">
         </ion-avatar>
         <h2>{{channel.name}}</h2>
-        <p>{{channel.latestMessage}}</p>
-        <ion-note item-right>{{channel.updated}}</ion-note>
+        <p>&nbsp;{{channel.latestMessage}}</p>
+        <ion-note item-right style="margin-right: -30px;">{{channel.updated}}</ion-note>
+        <br/>
+        <ion-badge item-right *ngIf="unreadCount(channel.channelId) > 0 ">{{unreadCount(channel.channelId)}}</ion-badge>
       </ion-item>
       <ion-item-options side="left">
         <button ion-button color="primary">

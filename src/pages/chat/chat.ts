@@ -15,7 +15,7 @@ export class ChatPage {
   public channel:any;
   users:any[];
 
-  lastLoaded:number;
+  lastLoadedFirst:number;
 
   @ViewChild(Content) content: Content;
   @ViewChild('fileInput') fileInput:ElementRef;
@@ -36,7 +36,7 @@ export class ChatPage {
         self.scrollToBottom(messages.length * 20);
 
         if( messages.length > 0 ){
-          self.lastLoaded = messages[0].createdAt;
+          self.lastLoadedFirst = messages[0].createdAt;
         }
       });
 
@@ -89,7 +89,7 @@ export class ChatPage {
       } else {
         infiniteHeader.enable(false);
       }
-    }, self.lastLoaded );
+    }, self.lastLoadedFirst );
   }
 
   public openMenu(){

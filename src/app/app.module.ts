@@ -25,6 +25,8 @@ import {InfiniteHeader} from '../directives/infiniteHeader';
 
 import {NotificationService} from './notificationService';
 
+import { Storage } from '@ionic/storage';
+
 @NgModule({
   declarations: [
     MyApp,
@@ -59,6 +61,6 @@ import {NotificationService} from './notificationService';
     SettingFormPage,
     ChatMenuPage
   ],
-  providers: [SharedService, NotificationService]
+  providers: [SharedService, NotificationService, Storage]
 })
 export class AppModule {}
