@@ -9,10 +9,12 @@ export class SharedService {
   stalk:any;
 
   unreadCounts:any;
+  lastestMessages:any;
 
   constructor() {
     this.stalk = new Stalk(this.host, this.app);
     this.unreadCounts = {};
+    this.lastestMessages = {};
   }
 
   public plusUnreadCount(channel, count){
@@ -26,6 +28,7 @@ export class SharedService {
     if( !this.unreadCounts[channel] ){
       this.unreadCounts[channel] = 0;
     } 
+    this.unreadCounts[channel] = 0;
   }
 
   public getUnreadCount(channel){
@@ -33,5 +36,13 @@ export class SharedService {
       this.unreadCounts[channel] = 0;
     }
     return this.unreadCounts[channel];
+  }
+
+  public setLatestMessage(channel,msg){
+    this.lastestMessages[channel] = msg;
+  }
+
+  public getLatestMessage(channel){
+    return (this.lastestMessages[channel] || "");
   }
 }

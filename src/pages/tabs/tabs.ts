@@ -43,6 +43,8 @@ export class TabsPage {
         message.name = data.user.nickName;
       }
 
+      ss.plusUnreadCount( data.C, 1 );
+      
       ns.notify( message );
 
       self.badgeCnt = ns.notificationsCnt;

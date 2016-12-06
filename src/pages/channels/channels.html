@@ -14,7 +14,7 @@
           <img src="{{channel.image}}">
         </ion-avatar>
         <h2>{{channel.name}}</h2>
-        <p>&nbsp;{{channel.latestMessage}}</p>
+        <p>{latestMessage(channel.channelId)}}&nbsp;</p>
         <ion-note item-right style="margin-right: -30px;">{{channel.updated}}</ion-note>
         <br/>
         <ion-badge item-right *ngIf="unreadCount(channel.channelId) > 0 ">{{unreadCount(channel.channelId)}}</ion-badge>

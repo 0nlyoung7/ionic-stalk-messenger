@@ -32,11 +32,19 @@ export class ChatPage {
       self.channel = channel;
 
       channel.loadMessages( function(err, messages ){
+
+        ss.clearUnreadCount( channelId );
+
+
         self.messages = messages;
         self.scrollToBottom(messages.length * 20);
 
-        if( messages.length > 0 ){
+        var until = messages.length;
+
+        if( until > 0 ){
           self.lastLoadedFirst = messages[0].createdAt;
+
+          ss.setLatestMessage( channelId, (messages[until-1].image ? "@Image" : messages[until-1].text) );
         }
       });
 

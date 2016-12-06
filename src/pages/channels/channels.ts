@@ -39,4 +39,8 @@ export class ChannelsPage {
   public unreadCount(channelId): number {
     return this.ss.getUnreadCount(channelId);
   }
+
+  public latestMessage(channelId): string {
+    return this.ss.getLatestMessage(channelId);
+  }
 }
