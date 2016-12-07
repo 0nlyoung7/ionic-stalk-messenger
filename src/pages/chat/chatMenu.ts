@@ -51,4 +51,10 @@ export class ChatMenuPage {
   public openSearchUser = () => {
     this.navCtrl.push(SearchFollowPage, {callback:this.inviteUser, btnNm:"Invite", users:this.users});
   }
+
+  public leaveChat = () => {
+    this.ss.stalk.currentChannel().leaveChat( function(err, result){
+      console.log( result );
+    });
+  }
 }

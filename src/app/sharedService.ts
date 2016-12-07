@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Storage } from '@ionic/storage';
 
 declare var Stalk: any;
 
@@ -7,14 +8,18 @@ export class SharedService {
   public host = 'https://im.stalk.io';
   public app = 'STALK';
   stalk:any;
+  storage:any;
 
   unreadCounts:any;
   lastestMessages:any;
 
-  constructor() {
+  constructor(storage: Storage) {
+  	this.storage = storage;
     this.stalk = new Stalk(this.host, this.app);
     this.unreadCounts = {};
     this.lastestMessages = {};
+
+    this.loadUnreadCount();
   }
 
   public plusUnreadCount(channel, count){
@@ -44,5 +49,9 @@ export class SharedService {
 
   public getLatestMessage(channel){
     return (this.lastestMessages[channel] || "");
+  }
+
+  loadUnreadCount(){
+  	//impl this
   }
 }
