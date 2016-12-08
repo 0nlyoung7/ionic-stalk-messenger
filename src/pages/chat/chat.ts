@@ -33,7 +33,7 @@ export class ChatPage {
 
       channel.loadMessages( function(err, messages ){
 
-        ss.clearUnreadCount( channelId );
+        ss.clearUnreadCount( channel.channelId );
 
 
         self.messages = messages;
@@ -44,13 +44,15 @@ export class ChatPage {
         if( until > 0 ){
           self.lastLoadedFirst = messages[0].createdAt;
 
-          ss.setLatestMessage( channelId, (messages[until-1].image ? "@Image" : messages[until-1].text) );
+          ss.setLatestMessage( channel.channelId, (messages[until-1].image ? "@Image" : messages[until-1].text) );
         }
       });
 
       channel.onMessage( function(data){
         self.messages.push( data );
         self.scrollToBottom(100);
+
+        ss.setLatestMessage( channel.channelId, (data.image ? "@Image" : data.text) );
       });
     });
   }

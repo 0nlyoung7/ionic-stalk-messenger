@@ -34,6 +34,9 @@ export class SignInPage {
         alert.present();
         return;
       }
+
+      self.ss.initStorage();
+
       self.navCtrl.push(TabsPage, {});
     });
   }
