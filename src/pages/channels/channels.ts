@@ -10,6 +10,8 @@ import {NotificationService} from '../../app/notificationService';
 
 import { ChatMenuPage } from '../chat/chatMenu';
 
+import { SearchFollowPage } from '../follows/searchFollow';
+
 @Component({
   selector: 'page-channels',
   templateUrl: 'channels.html'
@@ -43,4 +45,13 @@ export class ChannelsPage {
   public latestMessage(channelId): string {
     return this.ss.getLatestMessage(channelId);
   }
+
+  public openSearchFollow = () => {
+    this.navCtrl.push(SearchFollowPage, {callback:this.createChannel, btnNm:"Create"});
+  }
+
+  public createChannel = (userIds) => {
+    var self = this;
+    console.log( userIds );
+  };
 }

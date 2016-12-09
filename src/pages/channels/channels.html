@@ -15,7 +15,7 @@
         </ion-avatar>
         <h2>{{channel.name}}</h2>
         <p>{{latestMessage(channel.channelId)}}&nbsp;</p>
-        <ion-note item-right style="margin-right: -30px;">{{channel.updated}}</ion-note>
+        <ion-note item-right>{{channel.updated}}</ion-note>
         <br/>
         <ion-badge item-right *ngIf="unreadCount(channel.channelId) > 0 ">{{unreadCount(channel.channelId)}}</ion-badge>
       </ion-item>
@@ -37,4 +37,8 @@
       </ion-item-options>
     </ion-item-sliding>
   </ion-list>
+
+  <ion-fab bottom right>
+    <button ion-fab (click)="openSearchFollow();"><ion-icon name="add"></ion-icon></button>
+  </ion-fab>
 </ion-content>
