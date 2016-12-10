@@ -17,13 +17,13 @@ export class SearchFollowPage {
   checkedList: any = {};
   diabledList: any = {};
   callback: any;
-  btnNm: string;
+  mode: string;
 
   constructor(public navCtrl: NavController, public ss: SharedService, private app:App, private navParams: NavParams) {
 
     var self = this;
     this.callback = navParams.get('callback');
-    this.btnNm = navParams.get('btnNm') ? navParams.get('btnNm') : "OK";
+    this.mode = navParams.get('mode') ? navParams.get('mode') : "Invite";
 
     let existUsers = navParams.get('users');
 
@@ -48,7 +48,7 @@ export class SearchFollowPage {
     if( this.timeout )clearTimeout(this.timeout);
     this.timeout = setTimeout(function(){
       self.follows = self.follows.filter((follow) => {
-        return (follow.toLowerCase().indexOf(val.toLowerCase()) > -1);
+        return (follow.nickName.toLowerCase().indexOf(val.toLowerCase()) > -1);
       })
     }, 200 );
   }
@@ -57,14 +57,19 @@ export class SearchFollowPage {
     var self = this;
 
     var checkUserIds = [];
+    var checkedUsers = [];
     for( var userId in this.checkedList ){
       if( this.checkedList[userId] ){
         checkUserIds.push( userId );
       }
     }
 
+    checkedUsers = self.follows.filter(function(follow){
+      return ( self.checkedList[follow.id] == true );
+    });
+
     if( self.callback ){
-      self.callback(checkUserIds);
+      self.callback(checkUserIds, checkedUsers);
     }
     self.navCtrl.pop();
   }

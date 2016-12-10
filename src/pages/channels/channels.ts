@@ -47,11 +47,11 @@ export class ChannelsPage {
   }
 
   public openSearchFollow = () => {
-    this.navCtrl.push(SearchFollowPage, {callback:this.createChannel, btnNm:"Create"});
+    this.navCtrl.push(SearchFollowPage, {callback:this.createChannel, mode:"Select"});
   }
 
-  public createChannel = (userIds) => {
+  public createChannel = (userIds, users) => {
     var self = this;
-    console.log( userIds );
+    this.app.getRootNav().push(ChatMenuPage, {users:users});
   };
 }
