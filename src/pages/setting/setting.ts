@@ -14,6 +14,7 @@ import { SettingFormPage } from './settingForm';
 export class SettingPage {
 
   user:any;
+  useNotification:boolean;
 
   @ViewChild('fileInput') fileInput:ElementRef;
 
@@ -42,5 +43,9 @@ export class SettingPage {
     var self = this;
     this.ss.stalk.logOut();
     this.app.getRootNav().popToRoot();
+  }
+
+  public toggleNotification(){
+    console.log( this.useNotification );
   }
 }

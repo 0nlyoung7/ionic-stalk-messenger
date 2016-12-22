@@ -21,6 +21,18 @@
       <ion-icon name="ios-arrow-forward" item-right></ion-icon>
     </ion-item>
 
+    <ion-list-header>
+    &nbsp;
+    </ion-list-header>
+
+    <ion-item item-toggle>
+      <ion-toggle checked="false" [(ngModel)]="useNotification" (ionChange)="toggleNotification()"></ion-toggle>
+      <ion-icon name="notifications" item-left></ion-icon>
+      <ion-label>
+      Alarm
+      </ion-label>
+    </ion-item>
+
   </ion-list>
   <div padding>
     <button ion-button color="primary" block (click)="logOut()">logOut</button>
