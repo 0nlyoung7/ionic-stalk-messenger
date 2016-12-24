@@ -15,11 +15,14 @@ export class SettingPage {
 
   user:any;
   useNotification:boolean;
+  settings:any;
 
   @ViewChild('fileInput') fileInput:ElementRef;
 
   constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private app:App) {
     this.user = ss.stalk.currentUser();
+
+    this.useNotification = ss.settings['notification'] ? ss.settings['notification'] : false;
   }
 
   public gotoSettingForm(propKey,propKeyNm){
@@ -47,5 +50,6 @@ export class SettingPage {
 
   public toggleNotification(){
     console.log( this.useNotification );
+    this.ss.updateSetting( 'notification', this.useNotification );
   }
 }

@@ -5,6 +5,7 @@ declare var Stalk: any;
 
 var LATEST_MESSAGE_KEY = "STALK:LMS";
 var UNREAD_COUNT_KEY = "STALK:UCS";
+var SETTINGS_KEY = "STALK:SETTINGS";
 
 @Injectable()
 export class SharedService {
@@ -16,17 +17,20 @@ export class SharedService {
 
   unreadCounts:any;
   lastestMessages:any;
+  settings:any;
 
   constructor(storage: Storage) {
   	this.storage = storage;
     this.stalk = new Stalk(this.host, this.app);
     this.unreadCounts = {};
     this.lastestMessages = {};
+    this.settings = {};
   }
 
   public initStorage(){
     this.loadUnreadCount();
     this.loadLatestMessage();
+    this.loadSettings();
   }
 
   public plusUnreadCount(channel, count){
@@ -62,6 +66,11 @@ export class SharedService {
     return (this.lastestMessages[channel] || "");
   }
 
+  public updateSetting( key, value ){
+    this.settings[key] = value;
+    this.storage.set( this.stalk.currentUser().id +"_"+ SETTINGS_KEY, JSON.stringify( this.settings ) );
+  }
+
   loadUnreadCount(){
     var self = this;
     this.storage.get( this.stalk.currentUser().id +"_"+ UNREAD_COUNT_KEY ).then((val) => {
@@ -78,5 +87,14 @@ export class SharedService {
         self.lastestMessages = JSON.parse( val );
       }
     });
+  }
+
+  loadSettings(){
+    var self = this;
+    this.storage.get( this.stalk.currentUser().id +"_"+ SETTINGS_KEY ).then((val) => {
+      if( val ){
+        self.settings = JSON.parse( val );
+      }
+    }); 
   }
 }
