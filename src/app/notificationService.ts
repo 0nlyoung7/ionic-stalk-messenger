@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 
+import {SharedService} from './sharedService';
+
+
 @Injectable()
 export class NotificationService {
   notificationsSupport:any;
@@ -11,7 +14,7 @@ export class NotificationService {
   notification:any ;
   mozNotification:any ;
 
-  constructor() {
+  constructor(public ss: SharedService) {
     this.notificationsSupport = ('Notification' in window) || ('mozNotification' in navigator);
     this.notification = window["Notification"];
     this.mozNotification = window["mozNotification"];
@@ -34,6 +37,10 @@ export class NotificationService {
   }
 
   public notify = (data) => {
+    if( !this.ss.settings['notification'] ){
+      return;
+    }
+
     this.notificationsCnt++;
 
     if (!this.notificationsSupport ||
