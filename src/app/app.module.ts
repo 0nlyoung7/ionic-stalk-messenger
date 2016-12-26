@@ -17,6 +17,7 @@ import { ChatMenuPage } from '../pages/chat/chatMenu';
 
 import { SettingPage } from '../pages/setting/setting';
 import { SettingFormPage } from '../pages/setting/settingForm';
+import { ProfilePage } from '../pages/setting/profile';
 
 //GlobalVariable
 import {SharedService} from './sharedService';
@@ -40,6 +41,7 @@ import { Storage } from '@ionic/storage';
     ChatPage,
     SettingPage,
     SettingFormPage,
+    ProfilePage,
     InfiniteHeader,
     ChatMenuPage
   ],
@@ -59,6 +61,7 @@ import { Storage } from '@ionic/storage';
     ChatPage,
     SettingPage,
     SettingFormPage,
+    ProfilePage,
     ChatMenuPage
   ],
   providers: [SharedService, NotificationService, Storage]
