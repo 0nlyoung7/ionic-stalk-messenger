@@ -4,15 +4,12 @@ import { NavController, App } from 'ionic-angular';
 
 import {SharedService} from '../../app/sharedService';
 
-import { ProfilePage } from './profile';
-import { NotificationPage } from './notification';
-
 
 @Component({
-  selector: 'page-setting',
-  templateUrl: 'setting.html'
+  selector: 'page-notification',
+  templateUrl: 'notification.html'
 })
-export class SettingPage {
+export class NotificationPage {
 
   useNotification:boolean;
   settings:any;
@@ -21,17 +18,7 @@ export class SettingPage {
     this.useNotification = ss.settings['notification'] ? ss.settings['notification'] : false;
   }
 
-  public gotoProfile(){
-    this.app.getRootNav().push(ProfilePage);
-  }
-
-  public gotoNotification(){
-    this.app.getRootNav().push(NotificationPage);
-  }
-
-  public logOut = () => {
-    var self = this;
-    this.ss.stalk.logOut();
-    this.app.getRootNav().popToRoot();
+  public toggleNotification(){
+    this.ss.updateSetting( 'notification', this.useNotification );
   }
 }

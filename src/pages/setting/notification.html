@@ -1,29 +1,21 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>Setting</ion-title>
+    <ion-title>Notification</ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content>
   <ion-list >
-    <ion-item (click)="gotoProfile()">
-      <ion-icon name="people" item-left></ion-icon>
-      <ion-label>
-      Profile
-      </ion-label>
-      <ion-icon name="ios-arrow-forward" item-right></ion-icon>
-    </ion-item>
-
     <ion-list-header>
     &nbsp;
     </ion-list-header>
 
-    <ion-item (click)="gotoNotification()">
+    <ion-item item-toggle>
+      <ion-toggle checked="false" [(ngModel)]="useNotification" (ionChange)="toggleNotification()"></ion-toggle>
       <ion-icon name="notifications" item-left></ion-icon>
       <ion-label>
-      Notification
+      Alarm
       </ion-label>
-      <ion-icon name="ios-arrow-forward" item-right></ion-icon>
     </ion-item>
 
   </ion-list>
