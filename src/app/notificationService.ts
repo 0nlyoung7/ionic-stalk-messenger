@@ -23,6 +23,7 @@ export class NotificationService {
   }
 
   public start = () => {
+
     if (!this.notificationsSupport) {
       return false;
     }
@@ -37,6 +38,7 @@ export class NotificationService {
   }
 
   public notify = (data) => {
+
     if( !this.ss.settings['notification'] ){
       return;
     }
@@ -67,6 +69,8 @@ export class NotificationService {
       noti.show();
     }
 
+    this.playSound();
+
     // Auto close after 15s
     setTimeout( function(){
       noti.close();      
@@ -86,5 +90,10 @@ export class NotificationService {
   public clearNotification = () => {
     this.notificationsShown = {};
     this.notificationsCnt = 0;
+  }
+
+  public playSound = () => {
+    var audio = new Audio('job-done.ogg');
+    audio.play();
   }
 }
