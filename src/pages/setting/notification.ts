@@ -11,14 +11,21 @@ import {SharedService} from '../../app/sharedService';
 })
 export class NotificationPage {
 
-  useNotification:boolean;
+  usePreview:boolean;
+  useSound:boolean;
+
   settings:any;
 
   constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private app:App) {
-    this.useNotification = ss.settings['notification'] ? ss.settings['notification'] : false;
+    this.usePreview = ss.settings['usePreview'] ? ss.settings['usePreview'] : false;
+    this.useSound = ss.settings['useSound'] ? ss.settings['useSound'] : false;
   }
 
-  public toggleNotification(){
-    this.ss.updateSetting( 'notification', this.useNotification );
+  public togglePreview(){
+    this.ss.updateSetting( 'usePreview', this.usePreview );
+  }
+
+  public toggleSound(){
+    this.ss.updateSetting( 'useSound', this.useSound );
   }
 }

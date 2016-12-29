@@ -39,7 +39,7 @@ export class NotificationService {
 
   public notify = (data) => {
 
-    if( !this.ss.settings['notification'] ){
+    if( !this.ss.settings['usePreview'] ){
       return;
     }
 
@@ -69,7 +69,9 @@ export class NotificationService {
       noti.show();
     }
 
-    this.playSound();
+    if( this.ss.settings['useSound'] ){
+      this.playSound();
+    }
 
     // Auto close after 15s
     setTimeout( function(){

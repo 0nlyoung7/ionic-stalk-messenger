@@ -7,14 +7,23 @@
 <ion-content>
   <ion-list >
     <ion-list-header>
-    &nbsp;
+    Message Options
     </ion-list-header>
 
     <ion-item item-toggle>
-      <ion-toggle checked="false" [(ngModel)]="useNotification" (ionChange)="toggleNotification()"></ion-toggle>
-      <ion-icon name="notifications" item-left></ion-icon>
+      <ion-toggle checked="false" [(ngModel)]="usePreview" (ionChange)="togglePreview()"></ion-toggle>
       <ion-label>
-      Alarm
+      Show Previews
+      </ion-label>
+    </ion-item>
+
+    <ion-list-header>
+    Message Notifications
+    </ion-list-header>
+    <ion-item item-toggle>
+      <ion-toggle checked="false" [(ngModel)]="useSound" (ionChange)="toggleSound()"></ion-toggle>
+      <ion-label>
+      Use sound
       </ion-label>
     </ion-item>
 
