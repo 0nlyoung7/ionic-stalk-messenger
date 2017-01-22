@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>Notification Setting</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content class="profile">
+  <ion-list >
+    <ion-item item-toggle>
+      <ion-toggle checked="false" [(ngModel)]="usePreview" (ionChange)="togglePreview()"></ion-toggle>
+      <ion-label>
+      Preview
+      </ion-label>
+    </ion-item>
+    <ion-item item-toggle>
+      <ion-toggle checked="false" [(ngModel)]="useImagePreview" (ionChange)="toggleImagePreview()"></ion-toggle>
+      <ion-label>
+      Image Preview
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

@@ -37,7 +37,8 @@ export class NotificationService {
   }
 
   public notify = (data) => {
-    if( !this.ss.settings['notification'] ){
+    var usePreview = this.ss.settings['preview'] || true;
+    if( !usePreview ){
       return;
     }
 

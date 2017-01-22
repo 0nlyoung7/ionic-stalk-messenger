@@ -5,6 +5,7 @@ import { NavController, App } from 'ionic-angular';
 import {SharedService} from '../../app/sharedService';
 
 import { SettingFormPage } from './settingForm';
+import { NotificationPage } from './notification';
 
 
 @Component({
@@ -21,8 +22,6 @@ export class SettingPage {
 
   constructor(private renderer: Renderer, public navCtrl: NavController, public ss: SharedService, private app:App) {
     this.user = ss.stalk.currentUser();
-
-    this.useNotification = ss.settings['notification'] ? ss.settings['notification'] : false;
   }
 
   public gotoSettingForm(propKey,propKeyNm){
@@ -48,8 +47,7 @@ export class SettingPage {
     this.app.getRootNav().popToRoot();
   }
 
-  public toggleNotification(){
-    console.log( this.useNotification );
-    this.ss.updateSetting( 'notification', this.useNotification );
+  public gotoNotification (){
+    this.app.getRootNav().push(NotificationPage);
   }
 }

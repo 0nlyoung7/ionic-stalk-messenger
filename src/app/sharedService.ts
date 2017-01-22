@@ -9,7 +9,7 @@ var SETTINGS_KEY = "STALK:SETTINGS";
 
 @Injectable()
 export class SharedService {
-  public host = 'https://im.stalk.io';
+  public host = 'http://james.stalk.io:8080';
   public app = 'STALK';
 
   stalk:any;

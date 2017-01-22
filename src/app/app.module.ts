@@ -17,6 +17,7 @@ import { ChatMenuPage } from '../pages/chat/chatMenu';
 
 import { SettingPage } from '../pages/setting/setting';
 import { SettingFormPage } from '../pages/setting/settingForm';
+import { NotificationPage } from '../pages/setting/notification';
 
 //GlobalVariable
 import {SharedService} from './sharedService';
@@ -41,7 +42,8 @@ import { Storage } from '@ionic/storage';
     SettingPage,
     SettingFormPage,
     InfiniteHeader,
-    ChatMenuPage
+    ChatMenuPage,
+    NotificationPage
   ],
   imports: [
     IonicModule.forRoot(MyApp)
@@ -59,7 +61,8 @@ import { Storage } from '@ionic/storage';
     ChatPage,
     SettingPage,
     SettingFormPage,
-    ChatMenuPage
+    ChatMenuPage,
+    NotificationPage
   ],
   providers: [SharedService, NotificationService, Storage]
 })
