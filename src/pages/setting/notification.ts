@@ -5,13 +5,13 @@ import { NavController, App } from 'ionic-angular';
 import {SharedService} from '../../app/sharedService';
 
 @Component({
-  selector: 'page-setting',
+  selector: 'page-notification',
   templateUrl: 'notification.html'
 })
 export class NotificationPage {
-
   user:any;
   usePreview:boolean;
+  useSound:boolean;
   useImagePreview:boolean;
   settings:any;
 
@@ -20,6 +20,7 @@ export class NotificationPage {
     
     this.usePreview = ss.settings['preview'] ? ss.settings['preview'] : false;
     this.useImagePreview = ss.settings['imagePreview'] ? ss.settings['imagePreview'] : false;
+    this.useSound = ss.settings['useSound'] ? ss.settings['useSound'] : false;
   }
 
   public togglePreview =()=> {
@@ -28,5 +29,9 @@ export class NotificationPage {
 
   public toggleImagePreview =()=> {
     this.ss.updateSetting( 'imagePreview', this.useImagePreview );
+  }
+
+  public toggleSound(){
+    this.ss.updateSetting( 'useSound', this.useSound );
   }
 }

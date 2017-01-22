@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>Profile</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content class="profile">
+  <ion-list >
+    <ion-avatar (click)="selectFile()">
+      <img src="{{user.avatar}}">
+    </ion-avatar>
+    <ion-item detail-none (click)="gotoSettingForm('nickName', 'Nickname')">
+      <ion-label stacked>Nickname</ion-label>
+      <ion-input type="text" value="{{user.nickName}}" readonly></ion-input>
+      <ion-icon name="ios-arrow-forward" item-right></ion-icon>
+    </ion-item>
+
+    <ion-item detail-none (click)="gotoSettingForm('statusMessage', 'Status Message')">
+      <ion-label stacked>Status Message</ion-label>
+      <ion-input type="text" value="{{user.statusMessage}}" placeholder="" readonly></ion-input>
+      <ion-icon name="ios-arrow-forward" item-right></ion-icon>
+    </ion-item>
+
+  </ion-list>
+  <input type="file" #fileInput id="file" style="display:none" (change)="onFileChange($event, fileInput.value)" />
+</ion-content>
