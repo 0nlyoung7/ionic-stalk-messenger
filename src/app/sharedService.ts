@@ -9,7 +9,8 @@ var SETTINGS_KEY = "STALK:SETTINGS";
 
 @Injectable()
 export class SharedService {
-  public host = 'http://james.stalk.io:8080';
+  public host = 'http://localhost:8080';
+  //public host = 'https://im.stalk.io';
   public app = 'STALK';
 
   stalk:any;
@@ -44,7 +45,7 @@ export class SharedService {
   public clearUnreadCount(channel){
     if( !this.unreadCounts[channel] ){
       this.unreadCounts[channel] = 0;
-    } 
+    }
     this.unreadCounts[channel] = 0;
     this.storage.set( this.stalk.currentUser().id +"_"+ UNREAD_COUNT_KEY, JSON.stringify( this.unreadCounts ) );
   }
@@ -95,6 +96,6 @@ export class SharedService {
       if( val ){
         self.settings = JSON.parse( val );
       }
-    }); 
+    });
   }
 }
