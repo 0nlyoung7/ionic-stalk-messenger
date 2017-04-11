@@ -9,11 +9,11 @@ import { ChatPage } from './chat'
 import { SearchFollowPage } from '../follows/searchFollow';
 
 @Component({
-  selector: 'page-chatMenu',
+  selector: 'page-chat',
   templateUrl: 'chatMenu.html'
 })
 export class ChatMenuPage {
-
+  user:any;
   rootPage: any;
   rootParams: any;
 
@@ -21,6 +21,9 @@ export class ChatMenuPage {
   channelId: string;
 
   constructor(public navCtrl: NavController, public menuCtrl: MenuController, private navParams: NavParams, public ss: SharedService, private app:App ) {
+    this.user = ss.stalk.currentUser();
+
+    console.log( this.user );
 
     this.users = navParams.get('users');
     this.channelId = navParams.get('channelId');
